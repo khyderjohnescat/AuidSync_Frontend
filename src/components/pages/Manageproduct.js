@@ -1,113 +1,122 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Button, Table, Input, Modal, message } from "antd";
 
-const ProductPage = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    quantity: "",
-    image: "",
-    category: "",
-  });
+const API_BASE_URL = "http://localhost:2000/api/products"; // Adjust API URL if needed
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+function ProductManager() {
+    const [products, setProducts] = useState([]);
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        quantity: "",
+        category: "",
+        image: ""
+    });
+    const [editingId, setEditingId] = useState(null);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get("http://localhost:2000/api/products");
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      message.error("Failed to fetch products");
-    }
-    setLoading(false);
-  };
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const fetchProducts = async () => {
+        try {
+            const response = await axios.get(API_BASE_URL);
+            setProducts(response.data);
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+    };
 
-  const handleSubmit = async () => {
-    try {
-      await axios.post("http://localhost:2000/api/products", formData);
-      message.success("Product added successfully");
-      fetchProducts();
-      setModalVisible(false);
-      setFormData({ name: "", description: "", price: "", quantity: "", image: "", category: "" });
-    } catch (error) {
-      console.error("Error adding product:", error);
-      message.error("Failed to add product");
-    }
-  };
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:2000/api/products/${id}`);
-      message.success("Product deleted successfully");
-      fetchProducts();
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      message.error("Failed to delete product");
-    }
-  };
+    // ✅ Create or Update Product with Auth Token
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem("token"); // Ensure user is logged in
 
-  const handleRestore = async (id) => {
-    try {
-      await axios.post(`http://localhost:2000/api/products/restore/${id}`);
-      message.success("Product restored successfully");
-      fetchProducts();
-    } catch (error) {
-      console.error("Error restoring product:", error);
-      message.error("Failed to restore product");
-    }
-  };
+        try {
+            if (editingId) {
+                await axios.put(`${API_BASE_URL}/update/${editingId}`, formData, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } else {
+                await axios.post(API_BASE_URL, formData, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+            fetchProducts();
+            setFormData({ name: "", description: "", price: "", quantity: "", category: "", image: "" });
+            setEditingId(null);
+        } catch (error) {
+            console.error("Error saving product:", error);
+        }
+    };
 
-  const columns = [
-    { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Price", dataIndex: "price", key: "price" },
-    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <>
-          <Button danger onClick={() => handleDelete(record.id)}>Delete</Button>
-          <Button onClick={() => handleRestore(record.id)} style={{ marginLeft: "10px" }}>Restore</Button>
-        </>
-      ),
-    },
-  ];
+    // ✅ Edit Product
+    const handleEdit = (product) => {
+        setFormData(product);
+        setEditingId(product.id);
+    };
 
-  return (
-    <div>
-      <h1>Product Management</h1>
-      <Button type="primary" onClick={() => setModalVisible(true)}>Add Product</Button>
-      <Table dataSource={products} columns={columns} loading={loading} rowKey="id" />
+    // ✅ Soft Delete Product with Auth Token
+    const handleDelete = async (id) => {
+        const token = localStorage.getItem("token");
 
-      <Modal
-        title="Add Product"
-        open={modalVisible}
-        onOk={handleSubmit}
-        onCancel={() => setModalVisible(false)}
-      >
-        <Input placeholder="Name" name="name" value={formData.name} onChange={handleInputChange} />
-        <Input placeholder="Description" name="description" value={formData.description} onChange={handleInputChange} style={{ marginTop: 10 }} />
-        <Input placeholder="Price" name="price" value={formData.price} onChange={handleInputChange} style={{ marginTop: 10 }} />
-        <Input placeholder="Quantity" name="quantity" value={formData.quantity} onChange={handleInputChange} style={{ marginTop: 10 }} />
-        <Input placeholder="Image URL" name="image" value={formData.image} onChange={handleInputChange} style={{ marginTop: 10 }} />
-        <Input placeholder="Category" name="category" value={formData.category} onChange={handleInputChange} style={{ marginTop: 10 }} />
-      </Modal>
-    </div>
-  );
-};
+        try {
+            await axios.delete(`${API_BASE_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            fetchProducts();
+        } catch (error) {
+            console.error("Error deleting product:", error);
+        }
+    };
 
-export default ProductPage;
+    // ✅ Restore Soft Deleted Product
+    const handleRestore = async (id) => {
+        const token = localStorage.getItem("token");
+
+        try {
+            await axios.put(`${API_BASE_URL}/restore/${id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            fetchProducts();
+        } catch (error) {
+            console.error("Error restoring product:", error);
+        }
+    };
+
+    return (
+        <div>
+            <h2>Product Management</h2>
+
+            {/* Product Form */}
+            <form onSubmit={handleSubmit}>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Name" required />
+                <input type="text" name="description" value={formData.description} onChange={handleChange} placeholder="Description" />
+                <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Price" required />
+                <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="Quantity" required />
+                <input type="text" name="category" value={formData.category} onChange={handleChange} placeholder="Category" />
+                <input type="text" name="image" value={formData.image} onChange={handleChange} placeholder="Image URL" />
+                <button type="submit">{editingId ? "Update Product" : "Add Product"}</button>
+            </form>
+
+            {/* Product List */}
+            <ul>
+                {products.map((product) => (
+                    <li key={product.id}>
+                        <strong>{product.name}</strong> - ${product.price} - {product.quantity} pcs
+                        <button onClick={() => handleEdit(product)}>Edit</button>
+                        <button onClick={() => handleDelete(product.id)}>Delete</button>
+                        {product.deleted_at && <button onClick={() => handleRestore(product.id)}>Restore</button>}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+export default ProductManager;

@@ -5,13 +5,14 @@ const POS = () => {
     const [search, setSearch] = useState("");
     const [cart, setCart] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
-    const [products, setProducts] = useState([]); // Store fetched products
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch products from the backend
     useEffect(() => {
         const fetchProducts = async () => {
+            setIsLoading(true);
             try {
-                const response = await fetch("http://localhost:2000/api/products"); // Adjust URL if needed
+                const response = await fetch("http://localhost:2000/api/products");
                 if (!response.ok) {
                     throw new Error("Failed to fetch products");
                 }
@@ -19,22 +20,21 @@ const POS = () => {
                 setProducts(data);
             } catch (error) {
                 console.error("Error fetching products:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         fetchProducts();
     }, []);
 
-    // Get unique categories from products
     const categories = ["All", ...new Set(products.map((p) => p.category))];
 
-    // Filter products based on search and category
     const filteredProducts = products.filter((p) =>
         (selectedCategory === "All" || p.category === selectedCategory) &&
         p.name.toLowerCase().includes(search.toLowerCase())
     );
 
-    // Add to Cart
     const addToCart = (product) => {
         const existingItem = cart.find((item) => item.id === product.id);
         if (existingItem) {
@@ -46,12 +46,10 @@ const POS = () => {
         }
     };
 
-    // Remove from Cart
     const removeFromCart = (id) => {
         setCart(cart.filter((item) => item.id !== id));
     };
 
-    // Calculate Total Price
     const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
 
     return (
@@ -59,6 +57,8 @@ const POS = () => {
             {/* Left Section - Product List */}
             <div className="w-2/3 p-4 bg-gray-900 rounded-l-lg flex flex-col">
                 <h2 className="text-2xl font-bold mb-4">Product Menu</h2>
+
+                {isLoading && <p>Loading...</p>}
 
                 {/* Search & Filter */}
                 <div className="flex gap-4 mb-4">
@@ -84,22 +84,24 @@ const POS = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto" style={{ maxHeight: "500px" }}>
-                    {filteredProducts.map((product) => (
-                        <div key={product.id} className="bg-gray-800 p-4 rounded text-center flex flex-col items-center">
-                            <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded mb-2" />
-                            <h3 className="text-lg font-bold">{product.name}</h3>
-                            <p className="text-sm">{product.description}</p>
-                            <p className="text-lg font-semibold">${Number(product.price).toFixed(2)}</p>
-                            <button
-                                className="mt-2 bg-blue-600 px-4 py-2 rounded hover:bg-blue-500"
-                                onClick={() => addToCart(product)}
-                            >
-                                <FaShoppingCart className="inline mr-2" /> Add to Cart
-                            </button>
-                        </div>
-                    ))}
-                </div>
+                {!isLoading && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto" style={{ maxHeight: "500px" }}>
+                        {filteredProducts.map((product) => (
+                            <div key={product.id} className="bg-gray-800 p-4 rounded text-center flex flex-col items-center">
+                                <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded mb-2" />
+                                <h3 className="text-lg font-bold">{product.name}</h3>
+                                <p className="text-sm">{product.description}</p>
+                                <p className="text-lg font-semibold">${Number(product.price).toFixed(2)}</p>
+                                <button
+                                    className="mt-2 bg-blue-600 px-4 py-2 rounded hover:bg-blue-500"
+                                    onClick={() => addToCart(product)}
+                                >
+                                    <FaShoppingCart className="inline mr-2" /> Add to Cart
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Right Section - Cart */}

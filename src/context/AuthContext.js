@@ -1,58 +1,72 @@
-import { createContext, useState, useEffect } from "react";
-import axios from "axios";
+import { createContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
-        return JSON.parse(localStorage.getItem("user")) || null;
+        // Retrieve user from localStorage on initial render
+        const savedUser = localStorage.getItem("user");
+        return savedUser ? JSON.parse(savedUser) : null;
     });
 
-    // Auto-refresh session on component mount
-    useEffect(() => {
-        const checkSession = async () => {
-            try {
-                const res = await axios.post("http://localhost:2000/api/auth/refresh", {}, { withCredentials: true });
+    const [loading, setLoading] = useState(true);
 
-                if (res.data.user) {
-                    setUser(res.data.user);
-                    localStorage.setItem("user", JSON.stringify(res.data.user));
-                    localStorage.setItem("accessToken", res.data.accessToken); // Store token
-                }
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("http://localhost:2000/api/auth/me", {
+                    method: "GET",
+                    credentials: "include",
+                });
+    
+                if (!response.ok) throw new Error("Not authenticated");
+    
+                const data = await response.json();
+                setUser(data.user);
+                localStorage.setItem("user", JSON.stringify(data.user)); // Store user data
             } catch (error) {
-                console.log("Session expired or not found");
                 setUser(null);
                 localStorage.removeItem("user");
-                localStorage.removeItem("accessToken");
+            } finally {
+                setLoading(false);
             }
         };
-        checkSession();
-    }, []);
+    
+        if (!user) {  // Only fetch if user is not already set
+            checkAuth();
+        } else {
+            setLoading(false);
+        }
+    }, [user]); // ✅ Add user to the dependency array
 
-    // Login function
     const login = async (email, password) => {
-        try {
-            const res = await axios.post("http://localhost:2000/api/auth/login", { email, password }, { withCredentials: true });
+        const response = await fetch("http://localhost:2000/api/auth/login", { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+            credentials: "include",
+        });
 
-            setUser(res.data.user);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
-            localStorage.setItem("accessToken", res.data.accessToken); // Store token
-        } catch (error) {
-            throw new Error("Login failed!");
-        }
+        if (!response.ok) throw new Error("Login failed");
+
+        const data = await response.json();
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
     };
 
-    // Logout function
     const logout = async () => {
-        try {
-            await axios.post("http://localhost:2000/api/auth/logout", {}, { withCredentials: true });
-            setUser(null);
-            localStorage.removeItem("user");
-            localStorage.removeItem("accessToken"); // Remove token
-        } catch (error) {
-            console.error("Logout failed", error);
-        }
+        await fetch("http://localhost:2000/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+        });
+
+        setUser(null);
+        localStorage.removeItem("user");
     };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <AuthContext.Provider value={{ user, login, logout }}>
