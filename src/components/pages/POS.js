@@ -15,7 +15,7 @@ const POS = () => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch("http://localhost:5000/api/products");
+                const response = await fetch("http://localhost:5050/api/products");
                 if (!response.ok) {
                     throw new Error("Failed to fetch products");
                 }
@@ -30,7 +30,7 @@ const POS = () => {
 
         const fetchCategories = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/products/categories");
+                const response = await fetch("http://localhost:5050/api/products/categories");
                 if (!response.ok) throw new Error("Failed to fetch categories");
 
                 const data = await response.json();
