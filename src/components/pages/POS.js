@@ -30,7 +30,7 @@ const POS = () => {
 
         const fetchCategories = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/categories");
+                const response = await fetch("http://localhost:5000/api/products/categories");
                 if (!response.ok) throw new Error("Failed to fetch categories");
 
                 const data = await response.json();
