@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE_URL = "http://localhost:5000/api"; // Ensure correct backend URL
+
 const axiosInstance = axios.create({
-    baseURL: "http://localhost:6000/api",
+    baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
@@ -13,10 +15,10 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            console.warn("🔄 Token expired, trying to refresh...");
+            console.warn("Token expired, trying to refresh...");
 
             try {
-                const refreshResponse = await axios.post("/auth/refresh", {}, { withCredentials: true });
+                const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
                 const newToken = refreshResponse.data.accessToken;
                 localStorage.setItem("token", newToken);
                 console.log("Token refreshed successfully");
@@ -27,12 +29,22 @@ axiosInstance.interceptors.response.use(
             } catch (refreshError) {
                 console.error("Token refresh failed, redirecting to login");
                 localStorage.removeItem("token");
-                window.location.href = "/";
+                // window.location.href = "/";
+                return Promise.reject(refreshError);
             }
         }
 
         return Promise.reject(error);
     }
 );
+
+// Attach token to every request
+axiosInstance.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
 export default axiosInstance;

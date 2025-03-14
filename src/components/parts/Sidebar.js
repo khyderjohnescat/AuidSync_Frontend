@@ -1,6 +1,6 @@
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBars, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaCog, FaSignOutAlt } from "react-icons/fa";
 import { RxDashboard } from "react-icons/rx";
 import { CgMenuBoxed } from "react-icons/cg";
 import { RiListOrdered2 } from "react-icons/ri";
@@ -11,7 +11,6 @@ import { SiManageiq } from "react-icons/si";
 const Sidebar = () => {
     const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -19,36 +18,19 @@ const Sidebar = () => {
     };
 
     return (
-        <div>
-            {/* Hamburger Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="fixed top-4 left-4 z-50 text-white bg-black p-2 rounded-md md:hidden"
-            >
-                <FaBars size={20} />
-            </button>
-
-            {/* Sidebar */}
-            <div
-                className={`fixed inset-y-0 left-0 bg-black text-white w-60 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} transition-transform md:translate-x-0 md:relative md:flex flex-col p-4 h-screen`}
-            >
+        <>
+            {/* Fixed Sidebar */}
+            <div className="fixed top-0 left-0 w-60 h-screen bg-black text-white p-4 overflow-y-auto shadow-lg">
                 {/* Logo Section */}
                 <div className="flex items-center justify-between mb-8">
                     <img
                         src="./images/logo1.png"
                         alt="Brand Logo"
-                        className="w-32 h-auto object-contain mx-50"
+                        className="w-32 h-auto object-contain"
                     />
-                    {/* Close button for mobile */}
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="md:hidden text-white"
-                    >
-                        ✖
-                    </button>
                 </div>
 
-
+                {/* Navigation */}
                 <nav className="flex flex-col gap-4 flex-grow">
                     <Link to="/dashboard" className="flex items-center gap-2 hover:text-blue-400">
                         <RxDashboard /> Dashboard
@@ -67,6 +49,7 @@ const Sidebar = () => {
                     </Link>
                 </nav>
 
+                {/* Settings and Logout */}
                 <div className="mt-auto">
                     <Link to="/settings" className="flex items-center gap-2 hover:text-blue-400">
                         <FaCog /> Settings
@@ -76,7 +59,12 @@ const Sidebar = () => {
                     </button>
                 </div>
             </div>
-        </div>
+
+            {/* Ensure Main Content is not overlapped */}
+            <div className="pl-60">
+                {/* Other page content goes here */}
+            </div>
+        </>
     );
 };
 

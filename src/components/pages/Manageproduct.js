@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { FaSearch } from "react-icons/fa";
-import axiosInstance from "../../context/axiosInstance"; 
-
-const API_BASE_URL = "http://localhost:6000/api/products";
+import axiosInstance from "../../context/axiosInstance";
 
 function ProductManager() {
     const [products, setProducts] = useState([]);
@@ -11,24 +8,24 @@ function ProductManager() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        price: "",       
-        quantity: "",    
-        category: "",     
+        price: "",
+        quantity: "",
+        category: "",
         image: "",
-        is_active: true,  
-    });    
+        is_active: true,
+    });
     const [editingId, setEditingId] = useState(null);
 
-    // Fetch products
     const fetchProducts = useCallback(async () => {
         try {
-            const response = await axios.get(API_BASE_URL);
+            const response = await axiosInstance.get("/products/");
             setProducts(response.data);
         } catch (error) {
-            console.error("Error fetching products:", error);
+            console.error("Error fetching products:", error.response?.data || error.message);
         }
     }, []);
-
+    
+    
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
@@ -37,56 +34,38 @@ function ProductManager() {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value ?? "",  
+            [name]: value ?? "",
         }));
     };
-    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Update button clicked");
-    
-        const jsonData = {
-            name: formData.name,
-            description: formData.description,
-            price: Number(formData.price),
-            quantity: Number(formData.quantity),
-            category_id: Number(formData.category), 
-            image: formData.image,
-            is_active: formData.is_active,
-        };
-    
-        console.log("Submitting Data:", jsonData);
-    
+
         try {
             if (editingId) {
-                const response = await axiosInstance.put(`/products/update/${editingId}`, jsonData, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                });
-                console.log("Update Response:", response.data);
+                // Update existing product
+                const response = await axiosInstance.put(`/products/update/${editingId}`, formData);
+                console.log("Product updated:", response.data);
             } else {
-                console.log("No Editing ID found, skipping update.");
+                // Add new product
+                const response = await axiosInstance.post("/products/", formData);
+                console.log("Product added:", response.data);
             }
-    
             fetchProducts();
+            setEditingId(null);
             setFormData({
                 name: "",
                 description: "",
                 price: "",
                 quantity: "",
-                category: "", 
+                category: "",
                 image: "",
                 is_active: true,
             });
-            setEditingId(null);
         } catch (error) {
-            console.error(" Error updating product:", error.response?.data || error.message);
+            console.error("Error submitting product:", error.response?.data || error.message);
         }
     };
-    
 
     const handleEdit = (product) => {
         setFormData({
@@ -94,47 +73,32 @@ function ProductManager() {
             description: product.description || "",
             price: product.price ? String(product.price) : "",
             quantity: product.quantity ? String(product.quantity) : "",
-            category: product.category_id ? String(product.category_id) : "", 
+            category: product.category_id ? String(product.category_id) : "",
             image: product.image || "",
             is_active: product.is_active !== undefined ? product.is_active : true,
         });
-    
-        setEditingId(product.id || product._id);
+
+        setEditingId(product.id);
     };
 
     const handleDelete = async (id) => {
-        const token = localStorage.getItem("token");
-    
-        if (!token) {
-            console.error("No token found, user may be logged out.");
-            return;
-        }
-    
         try {
-            const response = await axiosInstance.delete(`/products/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-    
-            console.log("Product deleted:", response.data);
-            fetchProducts(); // Refresh product list
+            await axiosInstance.delete(`/products/${id}`);
+            console.log("Product soft deleted");
+            fetchProducts();
         } catch (error) {
             console.error("Error deleting product:", error.response?.data || error.message);
         }
     };
-    
 
-    const filteredProducts = products.filter((product) => {
-        const productName = product.name ? product.name.toLowerCase() : "";  
-        const productCategory = product.category ? product.category.toLowerCase() : ""; 
-        return productName.includes(search.toLowerCase()) || productCategory.includes(search.toLowerCase());
-    });
-    
+    const filteredProducts = products.filter((product) =>
+        product.name.toLowerCase().includes(search.toLowerCase()) ||
+        (product.category ? product.category.toLowerCase().includes(search.toLowerCase()) : false)
+    );
 
     return (
         <div className="p-6 text-white">
-            <h2 className="text-2xl font-bold mb-4">Product Management</h2>
+            <h2 className="text-2xl font-bold mb-4 text-black">Product Management</h2>
 
             {/* Search Bar */}
             <div className="flex items-center bg-gray-800 p-2 rounded mb-4">
@@ -168,9 +132,7 @@ function ProductManager() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => {
-                        const imageUrl = product.image.startsWith("http")
-                            ? product.image
-                            : `${product.image}`;
+                        const imageUrl = product.image.startsWith("http") ? product.image : `${product.image}`;
 
                         return (
                             <div key={product.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
