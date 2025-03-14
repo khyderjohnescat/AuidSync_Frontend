@@ -46,13 +46,14 @@ export const AuthProvider = ({ children }) => {
             body: JSON.stringify({ email, password }),
             credentials: "include",
         });
-
-        if (!response.ok) throw new Error("Login failed");
-
+    
         const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Login failed");
+    
         setUser(data.user);
         localStorage.setItem("user", JSON.stringify(data.user));
     };
+    
 
     const logout = async () => {
         await fetch("http://localhost:2000/api/auth/logout", {
