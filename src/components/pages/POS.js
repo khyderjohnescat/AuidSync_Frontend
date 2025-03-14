@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaShoppingCart, FaTrash } from "react-icons/fa";
 
 const POS = () => {
@@ -6,59 +6,80 @@ const POS = () => {
     const [cart, setCart] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchProducts = async () => {
             setIsLoading(true);
+            setError(null);
             try {
                 const response = await fetch("http://localhost:2000/api/products");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch products");
-                }
+                if (!response.ok) throw new Error("Failed to fetch products");
+
                 const data = await response.json();
                 setProducts(data);
-            } catch (error) {
-                console.error("Error fetching products:", error);
+            } catch (err) {
+                setError(err.message);
             } finally {
                 setIsLoading(false);
             }
         };
 
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:2000/api/categories");
+                if (!response.ok) throw new Error("Failed to fetch categories");
+
+                const data = await response.json();
+                setCategories(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
         fetchProducts();
+        fetchCategories();
     }, []);
 
-    const categories = ["All", ...new Set(products.map((p) => p.category))];
-
-    const filteredProducts = products.filter((p) =>
-        (selectedCategory === "All" || p.category === selectedCategory) &&
-        p.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredProducts = useMemo(() => {
+        return products.filter((p) =>
+            (selectedCategory === "All" || p.category_id === Number(selectedCategory)) &&
+            p.name.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [products, selectedCategory, search]);
 
     const addToCart = (product) => {
-        const existingItem = cart.find((item) => item.id === product.id);
-        if (existingItem) {
-            setCart(cart.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-            ));
-        } else {
-            setCart([...cart, { ...product, quantity: 1 }]);
-        }
+        setCart((prevCart) => {
+            const existingItem = prevCart.find((item) => item.id === product.id);
+            if (existingItem) {
+                return prevCart.map((item) =>
+                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                );
+            } else {
+                return [...prevCart, { ...product, quantity: 1 }];
+            }
+        });
     };
 
     const removeFromCart = (id) => {
-        setCart(cart.filter((item) => item.id !== id));
+        setCart((prevCart) => prevCart.filter((item) => item.id !== id));
     };
 
-    const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    const totalPrice = useMemo(
+        () => cart.reduce((total, item) => total + Number(item.price) * item.quantity, 0).toFixed(2),
+        [cart]
+    );
 
     return (
         <div className="flex h-screen p-6 text-white">
             {/* Left Section - Product List */}
             <div className="w-2/3 p-4 bg-gray-900 rounded-l-lg flex flex-col">
-                <h2 className="text-2xl font-bold mb-4">Product Menu</h2>
+                <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
                 {isLoading && <p>Loading...</p>}
+                {error && <p className="text-red-500">{error}</p>}
 
                 {/* Search & Filter */}
                 <div className="flex gap-4 mb-4">
@@ -77,29 +98,34 @@ const POS = () => {
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                     >
-                        {categories.map((cat, index) => (
-                            <option key={index} value={cat}>{cat}</option>
+                        <option value="All">All</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
                         ))}
                     </select>
                 </div>
 
                 {/* Product Grid */}
-                {!isLoading && (
+                {!isLoading && !error && (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto" style={{ maxHeight: "500px" }}>
-                        {filteredProducts.map((product) => (
-                            <div key={product.id} className="bg-gray-800 p-4 rounded text-center flex flex-col items-center">
-                                <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded mb-2" />
-                                <h3 className="text-lg font-bold">{product.name}</h3>
-                                <p className="text-sm">{product.description}</p>
-                                <p className="text-lg font-semibold">${Number(product.price).toFixed(2)}</p>
-                                <button
-                                    className="mt-2 bg-blue-600 px-4 py-2 rounded hover:bg-blue-500"
-                                    onClick={() => addToCart(product)}
-                                >
-                                    <FaShoppingCart className="inline mr-2" /> Add to Cart
-                                </button>
-                            </div>
-                        ))}
+                        {filteredProducts.length > 0 ? (
+                            filteredProducts.map((product) => (
+                                <div key={product.id} className="bg-gray-800 p-4 rounded text-center flex flex-col items-center">
+                                    <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded mb-2" />
+                                    <h3 className="text-lg font-bold">{product.name}</h3>
+                                    <p className="text-sm">{product.description}</p>
+                                    <p className="text-lg font-semibold">₱{Number(product.price).toFixed(2)}</p>
+                                    <button
+                                        className="mt-2 bg-blue-600 px-4 py-2 rounded hover:bg-blue-500"
+                                        onClick={() => addToCart(product)}
+                                    >
+                                        <FaShoppingCart className="inline mr-2" /> Add to Cart
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-400">No products found.</p>
+                        )}
                     </div>
                 )}
             </div>

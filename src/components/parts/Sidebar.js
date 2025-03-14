@@ -21,30 +21,34 @@ const Sidebar = () => {
     return (
         <div>
             {/* Hamburger Button */}
-            <button 
-                onClick={() => setIsOpen(!isOpen)} 
+            <button
+                onClick={() => setIsOpen(!isOpen)}
                 className="fixed top-4 left-4 z-50 text-white bg-black p-2 rounded-md md:hidden"
             >
                 <FaBars size={20} />
             </button>
 
             {/* Sidebar */}
-            <div 
+            <div
                 className={`fixed inset-y-0 left-0 bg-black text-white w-60 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} transition-transform md:translate-x-0 md:relative md:flex flex-col p-4 h-screen`}
             >
-                <div className="flex items-center justify-between mb-6">
-                    <span className="text-xl font-bold">
-                        Audi<span className="text-blue-400">Sync</span>
-                    </span>
+                {/* Logo Section */}
+                <div className="flex items-center justify-between mb-8">
+                    <img
+                        src="./images/logo1.png"
+                        alt="Brand Logo"
+                        className="w-32 h-auto object-contain mx-50"
+                    />
                     {/* Close button for mobile */}
-                    <button 
-                        onClick={() => setIsOpen(false)} 
+                    <button
+                        onClick={() => setIsOpen(false)}
                         className="md:hidden text-white"
                     >
                         ✖
                     </button>
                 </div>
-                
+
+
                 <nav className="flex flex-col gap-4 flex-grow">
                     <Link to="/dashboard" className="flex items-center gap-2 hover:text-blue-400">
                         <RxDashboard /> Dashboard
@@ -59,7 +63,7 @@ const Sidebar = () => {
                         <BiData /> Sales
                     </Link>
                     <Link to="/Manageproduct" className="flex items-center gap-2 hover:text-blue-400">
-                        <SiManageiq/> Manage Products
+                        <SiManageiq /> Manage Products
                     </Link>
                 </nav>
 
