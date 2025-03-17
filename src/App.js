@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Login from "./components/pages/Login";
 import Dashboard from "./components/pages/Dashboard";
@@ -8,17 +9,17 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/parts/Sidebar";
 import Manageproduct from "./components/pages/Manageproduct";
 
-
 function Layout() {
     const location = useLocation();
-    
+    const [isOpen, setIsOpen] = useState(false); // ✅ Add sidebar state
+
     // Hide sidebar when on the login page
     const hideSidebar = location.pathname === "/";
 
     return (
         <div className="flex">
-            {!hideSidebar && <Sidebar />}
-            <div className="flex-grow">
+            {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />} {/* ✅ Pass props */}
+            <div className={`flex-grow p-4 ${!hideSidebar ? 'ml-16 md:ml-60' : ''}`}>
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -26,7 +27,6 @@ function Layout() {
                     <Route path="/orderlist" element={<ProtectedRoute><Orderlist /></ProtectedRoute>} />
                     <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
                     <Route path="/manageproduct" element={<ProtectedRoute><Manageproduct /></ProtectedRoute>} />
-
                 </Routes>
             </div>
         </div>
