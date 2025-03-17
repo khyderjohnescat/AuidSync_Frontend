@@ -16,6 +16,7 @@ const POS = () => {
   const [discountType, setDiscountType] = useState(null);
   const [discountValue, setDiscountValue] = useState(0);
   const [customerName, setCustomerName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -135,27 +136,44 @@ const POS = () => {
 
   const checkout = async () => {
     if (!canCheckout) return;
-
+  
+    if (!paymentMethod) {
+      alert("Please select a payment method.");
+      return;
+    }
+  
+    const confirmCheckout = window.confirm("Are you sure you want to place the order?");
+    if (!confirmCheckout) return;
+  
+    setLoading(true);
+  
     try {
       const payload = {
         order_type: "dine-in",
-        customer_name: user.first_name + " " + user.last_name,
-        discount_type: discountType,
-        discount_value: Number(discountValue),
+        customer_name: `${user.first_name} ${user.last_name}`,
+        discount_type: discountType || "none",
+        discount_value: Number(discountValue) || 0,
         payment_method: paymentMethod,
-        amount_paid: Number(amountPaid),
+        amount_paid: Number(amountPaid) || 0,
       };
-
-      await axiosInstance.post("/checkout", payload);
-      alert("Order placed successfully!");
-      fetchCart();
-      fetchProducts();
-      setAmountPaid(0);
-      setDiscountType("none");
-      setDiscountValue(0);
+  
+      const response = await axiosInstance.post("/cart/checkout", payload);
+  
+      if (response.status === 201 || response.status === 200) {
+        alert("Order placed successfully!");
+        fetchCart(); // Refresh the cart after checkout
+        fetchProducts(); // Refresh product stock after checkout
+        setAmountPaid(0);
+        setDiscountType("none");
+        setDiscountValue(0);
+      } else {
+        alert("Checkout failed: " + response.data.message);
+      }
     } catch (error) {
-      console.error("Error during checkout:", error.message);
-      alert("Checkout failed: " + error.message);
+      console.error("Error during checkout:", error);
+      alert(`Checkout failed: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
