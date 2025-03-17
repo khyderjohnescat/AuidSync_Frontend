@@ -16,7 +16,7 @@ function ProductManager() {
     quantity: "",
     category_id: "",
     image: "",
-    is_active: true,
+    is_active: 1,
   });
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
