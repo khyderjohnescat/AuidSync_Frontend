@@ -152,10 +152,12 @@ function ProductManager() {
                 <input
                     type="text"
                     placeholder="Search products..."
-                    className="bg-transparent outline-none text-white w-full"
+                    className="bg-transparent outline-none text-white w-50"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
+
+                
             </div>
 
             {/* Products Grid */}
