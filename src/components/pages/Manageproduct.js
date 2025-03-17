@@ -109,8 +109,7 @@ function ProductManager() {
         } catch (error) {
             console.error("Error deleting product:", error.response?.data || error.message);
         }
-    };
-    
+    };  
 
     const openModal = () => {
         setEditingId(null);
