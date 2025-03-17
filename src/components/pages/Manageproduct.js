@@ -78,7 +78,7 @@ function ProductManager() {
       formDataToSend.append("price", formData.price);
       formDataToSend.append("quantity", formData.quantity);
       formDataToSend.append("category_id", formData.category_id);
-      formDataToSend.append("is_active", formData.is_active ? "true" : "false");
+      formDataToSend.append("is_active", formData.is_active ? 1 : 0);
 
       // Append image only if it's a new file
       if (formData.image instanceof File) {
@@ -122,12 +122,15 @@ function ProductManager() {
 
     setEditingId(product.id);
     setPreviewImage(
-      product.image && product.image.startsWith("http")
-        ? product.image
-        : product.image?.includes("uploads/")
-        ? `http://localhost:5050/${product.image.replace(/^\/+/, "")}` // Keep single slash
-        : `http://localhost:5050/uploads/${product.image.replace(/^\/+/, "")}`
-    );
+        product.image?.startsWith("http")
+          ? product.image
+          : product.image?.includes("uploads/")
+          ? `http://localhost:5050/${product.image.replace(/^\/+/, "")}`
+          : product.image
+          ? `http://localhost:5050/uploads/${product.image.replace(/^\/+/, "")}`
+          : ""
+      );
+      
 
     setIsModalOpen(true);
   };
