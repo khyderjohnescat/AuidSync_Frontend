@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaShoppingCart, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance";
@@ -136,17 +137,19 @@ const POS = () => {
 
   const checkout = async () => {
     if (!canCheckout) return;
-  
+
     if (!paymentMethod) {
       alert("Please select a payment method.");
       return;
     }
-  
-    const confirmCheckout = window.confirm("Are you sure you want to place the order?");
+
+    const confirmCheckout = window.confirm(
+      "Are you sure you want to place the order?"
+    );
     if (!confirmCheckout) return;
-  
+
     setLoading(true);
-  
+
     try {
       const payload = {
         order_type: "dine-in",
@@ -156,9 +159,9 @@ const POS = () => {
         payment_method: paymentMethod,
         amount_paid: Number(amountPaid) || 0,
       };
-  
+
       const response = await axiosInstance.post("/cart/checkout", payload);
-  
+
       if (response.status === 201 || response.status === 200) {
         alert("Order placed successfully!");
         fetchCart(); // Refresh the cart after checkout
@@ -171,7 +174,9 @@ const POS = () => {
       }
     } catch (error) {
       console.error("Error during checkout:", error);
-      alert(`Checkout failed: ${error.response?.data?.message || error.message}`);
+      alert(
+        `Checkout failed: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setLoading(false);
     }
@@ -212,26 +217,30 @@ const POS = () => {
         </div>
 
         {/* ✅ Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-gray-800 rounded-lg p-4 shadow-lg flex flex-col items-center"
+              className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
             >
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-28 h-28 object-cover rounded-md"
+                className="w-32 h-32 object-cover rounded-md mb-3"
               />
-              <h3 className="font-bold mt-2">{product.name}</h3>
-              <span className="text-gray-400 text-sm">
-                {product.description}
+              <h3 className="font-bold text-center mt-2">{product.name}</h3>
+
+              <span className="text-gray-400 text-sm mb-1">
+                {categories.find((cat) => cat.id === product.category_id)
+                  ?.name || "No Category"}
               </span>
-              <span className="text-xl font-bold mt-1">
+
+              <span className="text-xl font-bold text-green-400 mt-1">
                 ₱{Number(product.price).toFixed(2)}
               </span>
+
               <button
-                className="bg-blue-600 hover:bg-blue-500 rounded-md px-4 py-2 mt-2"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
                 onClick={() => addToCart(product.id, 1)}
               >
                 <FaShoppingCart className="inline mr-2" />
