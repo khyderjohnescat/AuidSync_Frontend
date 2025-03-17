@@ -8,18 +8,22 @@ import Sales from "./components/pages/Sales";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/parts/Sidebar";
 import Manageproduct from "./components/pages/Manageproduct";
+import DeletedProducts from "./components/pages/deletedProducts";
 
 function Layout() {
     const location = useLocation();
-    const [isOpen, setIsOpen] = useState(false); // ✅ Add sidebar state
+    const [isOpen, setIsOpen] = useState(false);
 
     // Hide sidebar when on the login page
     const hideSidebar = location.pathname === "/";
 
     return (
         <div className="flex">
-            {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />} {/* ✅ Pass props */}
-            <div className={`flex-grow p-4 ${!hideSidebar ? 'ml-16 md:ml-60' : ''}`}>
+            {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />} 
+            
+            <div 
+                className={`flex-grow p-4 transition-all duration-300 ${!hideSidebar ? (isOpen ? 'ml-60' : 'ml-16') : ''}`}
+            >
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -27,11 +31,13 @@ function Layout() {
                     <Route path="/orderlist" element={<ProtectedRoute><Orderlist /></ProtectedRoute>} />
                     <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
                     <Route path="/manageproduct" element={<ProtectedRoute><Manageproduct /></ProtectedRoute>} />
+                    <Route path="/products/deleted" element={<ProtectedRoute><DeletedProducts /></ProtectedRoute>} />
                 </Routes>
             </div>
         </div>
     );
 }
+
 
 function App() {
     return (

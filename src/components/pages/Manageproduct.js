@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FaSearch, FaPlus, FaTimes } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTimes, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance";
+import { useNavigate } from "react-router-dom";
+
 
 function ProductManager() {
-    const [deletedProducts, setDeletedProducts] = useState([]);
+    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
@@ -40,22 +42,11 @@ function ProductManager() {
         }
     }, []);
 
-    const fetchDeletedProducts = useCallback(async () => {
-        try {
-            const response = await axiosInstance.get("/products/deleted");
-            setDeletedProducts(response.data);
-        } catch (error) {
-            console.error("Error fetching deleted products:", error.response?.data || error.message);
-        }
-    }, []);
-
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-        fetchDeletedProducts();
-    }, [fetchProducts, fetchCategories, fetchDeletedProducts]);    
+    }, [fetchProducts, fetchCategories]);
 
-    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -76,16 +67,6 @@ function ProductManager() {
         }
     };
 
-    const handleRestore = async (id) => {
-        try {
-            await axiosInstance.put(`/products/restore/${id}`);
-            fetchProducts();
-            fetchDeletedProducts();
-        } catch (error) {
-            console.error("Error restoring product:", error.response?.data || error.message);
-        }
-    };    
-
     const handleEdit = (product) => {
         setFormData({
             name: product.name || "",
@@ -104,12 +85,10 @@ function ProductManager() {
         try {
             await axiosInstance.delete(`/products/${id}`);
             setProducts((prev) => prev.filter((product) => product.id !== id));
-            fetchDeletedProducts();
-            
         } catch (error) {
             console.error("Error deleting product:", error.response?.data || error.message);
         }
-    };  
+    };
 
     const openModal = () => {
         setEditingId(null);
@@ -130,44 +109,56 @@ function ProductManager() {
         setEditingId(null);
     };
 
-    const filteredProducts = products.filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase()) ||
-        categories.find((cat) => cat.id === product.category_id)?.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredProducts = products.filter((product) => {
+        const productNameMatch = product.name.toLowerCase().includes(search.toLowerCase());
+
+        const categoryName = categories.find((cat) => cat.id === product.category_id)?.name || "";
+        const categoryMatch = categoryName.toLowerCase().includes(search.toLowerCase());
+
+        const categoryFilter = selectedCategory === "All" || product.category_id === parseInt(selectedCategory, 10);
+
+        return (productNameMatch || categoryMatch) && categoryFilter;
+    });
 
     return (
         <div className="p-6 text-white">
             <h2 className="text-2xl font-bold mb-4 text-black">Product Management</h2>
-
-            {/* Search & Add Button */}
-            <div className="flex justify-between items-center bg-gray-800 p-2 rounded mb-4">
-                <div className="flex items-center">
-                    <FaSearch className="text-gray-400 mx-2" />
-                    <input
-                        type="text"
-                        placeholder="Search products..."
-                        className="bg-transparent outline-none text-white w-full"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+    
+            {/* Button Group */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
+                <div className="flex gap-2">
+                    <button onClick={openModal} className="bg-green-500 px-4 py-2 rounded flex items-center">
+                        <FaPlus className="mr-2" /> Add Product
+                    </button>
+                    <button onClick={() => navigate("/products/deleted")} className="bg-red-500 px-4 py-2 rounded flex items-center">
+                        <FaTrash className="mr-2" /> Deleted Products
+                    </button>
                 </div>
-                <button onClick={openModal} className="bg-green-500 px-4 py-2 rounded flex items-center">
-                    <FaPlus className="mr-2" /> Add Product
-                </button>
                 <select
-                        className="bg-gray-800 p-2 rounded text-white"
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                        <option value="All">All</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                        ))}
+                    className="bg-gray-800 p-2 rounded text-white"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                    <option value="All">All</option>
+                    {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                    ))}
                 </select>
+            </div>
+    
+            {/* Search Bar */}
+            <div className="flex items-center bg-gray-800 p-2 rounded mb-4">
+                <FaSearch className="text-gray-400 mx-2" />
+                <input
+                    type="text"
+                    placeholder="Search products..."
+                    className="bg-transparent outline-none text-white w-full"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
             </div>
 
             {/* Products Grid */}
-            <h2 className="text-xl font-bold mt-6 text-black">Active Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {filteredProducts.map((product) => {
                     const imageUrl = product.image.startsWith("http")
@@ -200,38 +191,6 @@ function ProductManager() {
                     );
                 })}
             </div>
-
-{/* Deleted Products */}
-<h2 className="text-xl font-bold mt-6 text-black">Deleted Products</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {deletedProducts.map((product) => {
-        const imageUrl = product.image.startsWith("http")
-            ? product.image
-            : `https://your-api-url.com/uploads/${product.image}`;
-
-        return (
-            <div key={product.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
-                <img
-                    src={imageUrl}
-                    alt={product.name}
-                    className="w-full h-40 object-cover rounded-md mb-3"
-                    onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
-                />
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-400">
-                    Category: {categories.find((cat) => cat.id === product.category_id)?.name || "Unknown"}
-                </p>
-                <p className="text-green-400 font-bold">₱{product.price}</p>
-                <button
-                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    onClick={() => handleRestore(product.id)}
-                >
-                    Restore
-                </button>
-            </div>
-        );
-    })}
-</div>
 
             {/* Product Modal */}
             {isModalOpen && (
