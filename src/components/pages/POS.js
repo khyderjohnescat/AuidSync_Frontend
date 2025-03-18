@@ -195,72 +195,73 @@ const POS = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-6 h-screen p-6 bg-gray-950 text-white">
-      {/* ✅ Product List */}
-      <div className="col-span-2 flex flex-col bg-gray-900 p-6 rounded-lg shadow-lg h-full">
-        <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
-  
-        {/* Search and Filter */}
-        <div className="flex gap-4 mb-4">
-          <div className="relative w-full">
-            <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full bg-gray-800 rounded-lg pl-10 p-2 outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select
-            className="bg-gray-800 p-2 rounded-lg"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+    <div className="grid grid-cols-3 gap-6 h-[600px] p-6 bg-gray-950 text-white">
+    {/* ✅ Product List */}
+<div className="col-span-2 flex flex-col bg-gray-900 p-6 rounded-lg shadow-lg">
+  <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
+
+  <div className="flex gap-4 mb-4">
+    <div className="relative w-full">
+      <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
+      <input
+        type="text"
+        placeholder="Search products..."
+        className="w-full bg-gray-800 rounded-lg pl-10 p-2 outline-none"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </div>
+    <select
+      className="bg-gray-800 p-2 rounded-lg"
+      value={selectedCategory}
+      onChange={(e) => setSelectedCategory(e.target.value)}
+    >
+      <option value="All">All</option>
+      {categories.map((cat) => (
+        <option key={cat.id} value={cat.id.toString()}>
+          {cat.name}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* ✅ Scrollable container */}
+  <div className="flex-1 overflow-y-auto">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {filteredProducts.map((product) => (
+        <div
+          key={product.id}
+          className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-32 h-32 object-cover rounded-md mb-3"
+          />
+          <h3 className="font-bold text-center mt-2">{product.name}</h3>
+
+          <span className="text-gray-400 text-sm mb-1">
+            {categories.find((cat) => cat.id === product.category_id)?.name || 'No Category'}
+          </span>
+
+          <span className="text-xl font-bold text-green-400 mt-1">
+            ₱{Number(product.price).toFixed(2)}
+          </span>
+
+          <button
+            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
+            onClick={() => addToCart(product.id, 1)}
           >
-            <option value="All">All</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id.toString()}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            <FaShoppingCart className="inline mr-2" />
+            Add to Cart
+          </button>
         </div>
-  
-        {/* Scrollable Product Grid */}
-        <div className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(150vh - 250px)" }}>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-32 h-32 object-cover rounded-md mb-3"
-                />
-                <h3 className="font-bold text-center mt-2">{product.name}</h3>
-  
-                <span className="text-gray-400 text-sm mb-1">
-                  {categories.find((cat) => cat.id === product.category_id)?.name || "No Category"}
-                </span>
-  
-                <span className="text-xl font-bold text-green-400 mt-1">
-                  ₱{Number(product.price).toFixed(2)}
-                </span>
-  
-                <button
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
-                  onClick={() => addToCart(product.id, 1)}
-                >
-                  <FaShoppingCart className="inline mr-2" />
-                  Add to Cart
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+
   
       {/* ✅ Grouped Cart */}
       <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg h-full">
@@ -389,9 +390,8 @@ const POS = () => {
         )}
       </div>
     </div>
-  );
+  );  
   
-
 };
 
 export default POS;
