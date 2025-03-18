@@ -280,62 +280,61 @@ const OrderList = () => {
 
       {/* Table Section */}
       <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
-        <table className="min-w-full table-auto text-sm">
-          <thead className="bg-gray-700 text-white">
-            <tr>
-              {[
-                "ID",
-                "Order Type",
-                "Customer",
-                "Staff",
-                "Discount Type",
-                "Value",
-                "Amount",
-                "Final Price",
-                "Payment",
-                "Paid",
-                "Change",
-                "Status",
-                "Created At",
-                "Actions",
-              ].map((header) => (
-                <th key={header} className="p-2 text-left">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-700">
-                <td className="p-2">{order.id}</td>
-                <td className="p-2">{order.order_type}</td>
-                <td className="p-2">{order.customer_name || "N/A"}</td>
-                <td className="p-2">{order.staff_name}</td>
-                <td className="p-2">{order.discount_type}</td>
-                <td className="p-2">{order.discount_value}</td>
-                <td className="p-2">{order.discount_amount}</td>
-                <td className="p-2">₱{order.final_price}</td>
-                <td className="p-2">{order.payment_method}</td>
-                <td className="p-2">₱{order.amount_paid}</td>
-                <td className="p-2">₱{order.change}</td>
-                <td className="p-2">{order.status}</td>
-                <td className="p-2">
-                  {new Date(order.created_at).toLocaleString()}
-                </td>
-                <td className="p-2 text-center">
-                  <button
-                    className="bg-blue-500 text-white text-xs px-2 py-1 rounded hover:bg-blue-400"
-                    onClick={() => handleViewOrderDetails(order.id)}
-                  >
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  <table className="min-w-full table-auto text-base"> {/* Changed text-sm to text-base */}
+    <thead className="bg-gray-700 text-white">
+      <tr>
+        {[
+          "ID",
+          "Order Type",
+          "Customer",
+          "Staff",
+          "Discount Type",
+          "Value",
+          "Amount",
+          "Final Price",
+          "Payment",
+          "Paid",
+          "Change",
+          "Status",
+          "Created At",
+          "Actions",
+        ].map((header) => (
+          <th key={header} className="p-3 text-left"> {/* Increased padding */}
+            {header}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {orders.map((order) => (
+        <tr key={order.id} className="hover:bg-gray-700">
+          <td className="p-3">{order.id}</td> {/* Increased padding */}
+          <td className="p-3">{order.order_type}</td>
+          <td className="p-3">{order.customer_name || "N/A"}</td>
+          <td className="p-3">{order.staff_name || "N/A"}</td>
+          <td className="p-3">{order.discount_type || "None"}</td>
+          <td className="p-3">₱{order.discount_value || "0.00"}</td>
+          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+          <td className="p-3">₱{order.final_price}</td>
+          <td className="p-3">{order.payment_method}</td>
+          <td className="p-3">₱{order.amount_paid}</td>
+          <td className="p-3">₱{order.change}</td>
+          <td className="p-3">{order.status}</td>
+          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+          <td className="p-3">
+            <button
+              onClick={() => handleViewOrderDetails(order.id)}
+              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+            >
+              View
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
 
       {/* Modal for Order Details */}
       {selectedOrder && (

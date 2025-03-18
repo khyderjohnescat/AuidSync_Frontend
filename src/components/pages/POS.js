@@ -195,9 +195,9 @@ const POS = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-6 h-[600px] p-6 bg-gray-950 text-white">
+    <div className="grid grid-cols-3 gap-2 h-[500px] p-2 bg-gray-950 text-white">
     {/* ✅ Product List */}
-<div className="col-span-2 flex flex-col bg-gray-900 p-6 rounded-lg shadow-lg">
+<div className="col-span-2 flex flex-col bg-gray-900 p-5 rounded-lg shadow-lg">
   <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
   <div className="flex gap-4 mb-4">
@@ -227,16 +227,16 @@ const POS = () => {
 
   {/* ✅ Scrollable container */}
   <div className="flex-1 overflow-y-auto">
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {filteredProducts.map((product) => (
+  <div className="grid grid-cols-4 lg:grid-cols-4 gap-5">
+  {filteredProducts.map((product) => (
         <div
           key={product.id}
-          className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
+          className="bg-gray-800 rounded-lg p-2 shadow-md flex flex-col items-center justify-between"
         >
           <img
             src={product.image}
             alt={product.name}
-            className="w-32 h-32 object-cover rounded-md mb-3"
+            className="w-40 h-40 object-cover rounded-md mb-3"
           />
           <h3 className="font-bold text-center mt-2">{product.name}</h3>
 
