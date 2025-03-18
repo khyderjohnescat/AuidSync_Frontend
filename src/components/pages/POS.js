@@ -197,12 +197,10 @@ const POS = () => {
   return (
     <div className="grid grid-cols-3 gap-6 h-screen p-6 bg-gray-950 text-white">
       {/* ✅ Product List */}
-      <div className="col-span-2 flex flex-col bg-gray-900 p-6 rounded-lg shadow-lg">
+      <div className="col-span-2 flex flex-col bg-gray-900 p-6 rounded-lg shadow-lg h-full">
         <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
-
-        {isLoading && <p className="text-gray-400">Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
+  
+        {/* Search and Filter */}
         <div className="flex gap-4 mb-4">
           <div className="relative w-full">
             <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
@@ -227,54 +225,52 @@ const POS = () => {
             ))}
           </select>
         </div>
-
-        {/* ✅ Product Grid */}
-        <div
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-          style={{ minHeight: "400px" }} // 👈 Added min-height
-        >
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-32 h-32 object-cover rounded-md mb-3"
-              />
-              <h3 className="font-bold text-center mt-2">{product.name}</h3>
-
-              <span className="text-gray-400 text-sm mb-1">
-                {categories.find((cat) => cat.id === product.category_id)
-                  ?.name || "No Category"}
-              </span>
-
-              <span className="text-xl font-bold text-green-400 mt-1">
-                ₱{Number(product.price).toFixed(2)}
-              </span>
-
-              <button
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
-                onClick={() => addToCart(product.id, 1)}
+  
+        {/* Scrollable Product Grid */}
+        <div className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(150vh - 250px)" }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
               >
-                <FaShoppingCart className="inline mr-2" />
-                Add to Cart
-              </button>
-            </div>
-          ))}
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-32 h-32 object-cover rounded-md mb-3"
+                />
+                <h3 className="font-bold text-center mt-2">{product.name}</h3>
+  
+                <span className="text-gray-400 text-sm mb-1">
+                  {categories.find((cat) => cat.id === product.category_id)?.name || "No Category"}
+                </span>
+  
+                <span className="text-xl font-bold text-green-400 mt-1">
+                  ₱{Number(product.price).toFixed(2)}
+                </span>
+  
+                <button
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
+                  onClick={() => addToCart(product.id, 1)}
+                >
+                  <FaShoppingCart className="inline mr-2" />
+                  Add to Cart
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
+  
       {/* ✅ Grouped Cart */}
-      <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
+      <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg h-full">
         <h2 className="text-2xl font-bold mb-4">Cart</h2>
         {cart.length === 0 ? (
           <p className="text-gray-400">Your cart is empty.</p>
         ) : (
           <>
             {/* ✅ Grouped Cart Items */}
-            <div className="max-h-64 overflow-y-auto space-y-2">
+            <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
               {Object.values(
                 cart.reduce((acc, item) => {
                   if (acc[item.product?.id]) {
@@ -299,7 +295,7 @@ const POS = () => {
                 </div>
               ))}
             </div>
-
+  
             {/* ✅ Summary */}
             <div className="mt-4 space-y-2">
               {/* ✅ Discount Input */}
@@ -321,7 +317,7 @@ const POS = () => {
                   onChange={(e) => setDiscountValue(e.target.value)}
                 />
               </div>
-
+  
               {/* ✅ Total, Discount, and Final Price */}
               <div className="flex justify-between text-gray-400">
                 <span>Total:</span>
@@ -336,7 +332,7 @@ const POS = () => {
                 <span>₱{finalPrice.toFixed(2)}</span>
               </div>
             </div>
-
+  
             {/* ✅ Customer Name */}
             <div className="mt-4">
               <input
@@ -347,7 +343,7 @@ const POS = () => {
                 onChange={(e) => setCustomerName(e.target.value)}
               />
             </div>
-
+  
             {/* ✅ Payment Method */}
             <div className="mt-4">
               <select
@@ -359,7 +355,7 @@ const POS = () => {
                 <option value="card">Card</option>
               </select>
             </div>
-
+  
             {/* ✅ Amount Paid */}
             <div className="mt-2">
               <input
@@ -370,13 +366,13 @@ const POS = () => {
                 onChange={(e) => setAmountPaid(e.target.value)}
               />
             </div>
-
+  
             {/* ✅ Display Change */}
             <div className="flex justify-between mt-2 text-gray-400">
               <span>Change:</span>
               <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
             </div>
-
+  
             {/* ✅ Checkout Button */}
             <button
               className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
@@ -394,6 +390,8 @@ const POS = () => {
       </div>
     </div>
   );
+  
+
 };
 
 export default POS;
