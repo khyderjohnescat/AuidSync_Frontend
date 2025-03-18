@@ -2,6 +2,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaShoppingCart, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
 
 const POS = () => {
   const [search, setSearch] = useState("");
@@ -138,22 +141,31 @@ const POS = () => {
   const checkout = async () => {
     if (!canCheckout) return;
 
+    const nameToSave = customerName.trim() || "None";
+
     if (!paymentMethod) {
-      alert("Please select a payment method.");
+      toast.error("Please select a payment method.");
       return;
     }
 
-    const confirmCheckout = window.confirm(
-      "Are you sure you want to place the order?"
-    );
-    if (!confirmCheckout) return;
+    const result = await Swal.fire({
+      title: "Confirm Checkout",
+      text: "Are you sure you want to place the order?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, place order",
+    });
+
+    if (!result.isConfirmed) return;
 
     setLoading(true);
 
     try {
       const payload = {
         order_type: "dine-in",
-        customer_name: `${user.first_name} ${user.last_name}`,
+        customer_name: nameToSave,
         discount_type: discountType || "none",
         discount_value: Number(discountValue) || 0,
         payment_method: paymentMethod,
@@ -163,18 +175,18 @@ const POS = () => {
       const response = await axiosInstance.post("/cart/checkout", payload);
 
       if (response.status === 201 || response.status === 200) {
-        alert("Order placed successfully!");
+        toast.success("Order placed successfully!");
         fetchCart(); // Refresh the cart after checkout
         fetchProducts(); // Refresh product stock after checkout
         setAmountPaid(0);
         setDiscountType("none");
         setDiscountValue(0);
       } else {
-        alert("Checkout failed: " + response.data.message);
+        toast.error(`Checkout failed: ${response.data.message}`);
       }
     } catch (error) {
       console.error("Error during checkout:", error);
-      alert(
+      toast.error(
         `Checkout failed: ${error.response?.data?.message || error.message}`
       );
     } finally {
@@ -217,7 +229,10 @@ const POS = () => {
         </div>
 
         {/* ✅ Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          style={{ minHeight: "400px" }} // 👈 Added min-height
+        >
           {filteredProducts.map((product) => (
             <div
               key={product.id}
@@ -251,34 +266,43 @@ const POS = () => {
         </div>
       </div>
 
-      {/* ✅ Cart */}
+      {/* ✅ Grouped Cart */}
       <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Cart</h2>
         {cart.length === 0 ? (
           <p className="text-gray-400">Your cart is empty.</p>
         ) : (
           <>
-            {/* ✅ Cart Items */}
-            <ul className="space-y-2">
-              {cart.map((item) => (
-                <li
+            {/* ✅ Grouped Cart Items */}
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {Object.values(
+                cart.reduce((acc, item) => {
+                  if (acc[item.product?.id]) {
+                    acc[item.product?.id].quantity += item.quantity;
+                  } else {
+                    acc[item.product?.id] = { ...item };
+                  }
+                  return acc;
+                }, {})
+              ).map((item) => (
+                <div
                   key={item.id}
-                  className="flex justify-between items-center bg-gray-700 p-2 rounded"
+                  className="flex justify-between items-center bg-gray-700 p-2 rounded transition-all duration-300"
                 >
                   <span>
-                    {item.product?.name} x {item.quantity}
+                    {item.product?.name} x{item.quantity}
                   </span>
                   <span>₱{(item.price * item.quantity).toFixed(2)}</span>
                   <button onClick={() => removeFromCart(item.id)}>
                     <FaTrash className="text-red-500" />
                   </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
 
             {/* ✅ Summary */}
             <div className="mt-4 space-y-2">
-              {/* Discount Input */}
+              {/* ✅ Discount Input */}
               <div className="flex items-center gap-2">
                 <select
                   className="bg-gray-700 text-white p-2 rounded w-1/3"
@@ -298,7 +322,7 @@ const POS = () => {
                 />
               </div>
 
-              {/* Total, Discount, and Final Price */}
+              {/* ✅ Total, Discount, and Final Price */}
               <div className="flex justify-between text-gray-400">
                 <span>Total:</span>
                 <span>₱{totalPrice.toFixed(2)}</span>
@@ -312,6 +336,7 @@ const POS = () => {
                 <span>₱{finalPrice.toFixed(2)}</span>
               </div>
             </div>
+
             {/* ✅ Customer Name */}
             <div className="mt-4">
               <input
