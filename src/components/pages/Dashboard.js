@@ -103,8 +103,8 @@ const Dashboard = () => {
     }), [analytics.popularOrders]);
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen bg-gray-900 shadow-md rounded-md">
-            <h1 className="text-3xl font-bold text-white mb-5">Welcome, {user?.lastname || "User"}</h1>
+        <div className="p-6 bg-gray-100 min-h-screen bg-gray-900 shadow-md ">
+            <h1 className="text-3xl font-bold text-white mb-5">Welcome, {user?.firstname || "User"}</h1>
 
             <div className="mb-4  flex justify-end">
                 <label className="mr-2 mt-2 font-semibold text-white">Filter:</label>

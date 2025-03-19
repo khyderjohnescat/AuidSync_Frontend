@@ -22,7 +22,7 @@ function Layout() {
             {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />} 
             
             <div 
-                className={`flex-grow p-4 transition-all duration-300 ${!hideSidebar ? (isOpen ? 'ml-60' : 'ml-16') : ''}`}
+                className={`flex-grow transition-all duration-300 ${!hideSidebar ? (isOpen ? 'ml-60' : 'ml-16') : ''}`}
             >
                 <Routes>
                     <Route path="/" element={<Login />} />

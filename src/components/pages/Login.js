@@ -5,35 +5,94 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const { user, login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (user) {
-            navigate("/dashboard"); // Redirect if already logged in
-        }
+        if (user) navigate("/dashboard"); // Redirect if logged in
     }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError(null);
+
         try {
             await login(email, password);
             navigate("/dashboard");
         } catch (err) {
-            alert("Login failed!");
+            setError("Invalid email or password. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-            <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg rounded-md">
-                <h2 className="text-xl font-semibold mb-4">Login</h2>
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    className="w-full mb-2 p-2 border rounded"/>
-                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-                    className="w-full mb-2 p-2 border rounded"/>
-                <button className="bg-blue-500 text-white w-full py-2 rounded">Login</button>
-            </form>
+        <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+            {/* Background Image with Blur */}
+            <div 
+                className="absolute inset-0 bg-cover bg-center blur-md" 
+                style={{ backgroundImage: "url('/Images/background.jpg')" }}
+            ></div>
+            
+            {/* Content Wrapper with More Shadow and Glass Effect */}
+            <div className="relative flex flex-wrap w-full max-w-4xl bg-white bg-opacity-30 backdrop-blur-md shadow-2xl drop-shadow-lg rounded-lg overflow-hidden">
+                
+                {/* Left Side - Info Section with More Shadow */}
+                <div className="w-full md:w-1/2 flex items-center justify-center p-10 bg-gray-300 shadow-lg">
+                    <div className="text-center max-w-md">
+                        <h1 className="text-3xl font-extrabold text-gray-800 mb-6 leading-tight">
+                            Smarter Financial Management Starts Here
+                        </h1>
+                        <p className="text-gray-600 text-md leading-relaxed">
+                            <span className="font-semibold text-blue-600">Join us</span> today and take control of your business finances with our secure and intuitive platform.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Right Side - Login Form with More Shadow */}
+                <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-700 text-white p-10 shadow-xl">
+                    <div className="bg-gray-800 p-8 shadow-2xl drop-shadow-xl rounded-md w-full max-w-sm">
+                        <div className="flex justify-center mb-6">
+                            <img src="/Images/logo.png" alt="Logo" className="h-16" />
+                        </div>
+                        <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
+                        {error && <p className="text-red-400 text-sm text-center mb-4">{error}</p>}
+                        <form onSubmit={handleSubmit} className="p-4">
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full mb-4 p-3 border rounded bg-gray-700 text-white text-md focus:ring-2 focus:ring-blue-500"
+                                aria-label="Email"
+                                required
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full mb-4 p-3 border rounded bg-gray-700 text-white text-md focus:ring-2 focus:ring-blue-500"
+                                aria-label="Password"
+                                required
+                            />
+                            <p className="text-sm text-gray-400 text-right mb-4 cursor-pointer hover:text-gray-200">
+                                Forgot Password?
+                            </p>
+                            <button
+                                type="submit"
+                                className={`w-full py-2 text-md font-semibold rounded ${loading ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"} text-white transition duration-300`}
+                                disabled={loading}
+                            >
+                                {loading ? "Logging in..." : "Login"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
