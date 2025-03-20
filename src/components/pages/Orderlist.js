@@ -233,8 +233,8 @@ const OrderList = () => {
     <div className="bg-gray-950 min-h-screen p-4 text-gray-200">
       <h2 className="text-2xl font-bold mb-4 text-white">Order List</h2>
 
-      {/* Filter Section */}
-      <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
+    {/* Filter Section */}
+    <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
         <input
           type="text"
           name="search"
@@ -277,6 +277,7 @@ const OrderList = () => {
           Clear Filters
         </button>
       </div>
+      
 
       {/* Table Section */}
       <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
