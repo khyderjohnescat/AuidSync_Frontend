@@ -176,8 +176,8 @@ const POS = () => {
 
       if (response.status === 201 || response.status === 200) {
         toast.success("Order placed successfully!");
-        fetchCart(); // Refresh the cart after checkout
-        fetchProducts(); // Refresh product stock after checkout
+        fetchCart(); 
+        fetchProducts(); 
         setAmountPaid(0);
         setDiscountType("none");
         setDiscountValue(0);
@@ -225,170 +225,179 @@ const POS = () => {
     </select>
   </div>
 
-  {/* ✅ Scrollable container */}
-  <div className="flex-1 overflow-y-auto">
-  <div className="grid grid-cols-4 lg:grid-cols-4 gap-5">
-  {filteredProducts.map((product) => (
-        <div
-          key={product.id}
-          className="bg-gray-800 rounded-lg p-2 shadow-md flex flex-col items-center justify-between"
+ {/* ✅ Scrollable container */}
+<div className="flex-1 overflow-y-auto">
+  <div className="grid grid-cols-3 lg:grid-cols-3 gap-3">
+    {filteredProducts.map((product) => (
+      <div
+        key={product.id}
+        className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between"
+      >
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-32 h-32 object-cover rounded-md mb-3"
+        />
+        <h3 className="font-bold text-center mt-2">{product.name}</h3>
+
+        <span className="text-gray-400 text-sm mb-1">
+          {categories.find((cat) => cat.id === product.category_id)?.name || 'No Category'}
+        </span>
+
+        <span className="text-xl font-bold text-green-400 mt-1">
+          ₱{Number(product.price).toFixed(2)}
+        </span>
+
+        <button
+          className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
+          onClick={() => addToCart(product.id, 1)}
         >
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-40 h-40 object-cover rounded-md mb-3"
-          />
-          <h3 className="font-bold text-center mt-2">{product.name}</h3>
-
-          <span className="text-gray-400 text-sm mb-1">
-            {categories.find((cat) => cat.id === product.category_id)?.name || 'No Category'}
-          </span>
-
-          <span className="text-xl font-bold text-green-400 mt-1">
-            ₱{Number(product.price).toFixed(2)}
-          </span>
-
-          <button
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
-            onClick={() => addToCart(product.id, 1)}
-          >
-            <FaShoppingCart className="inline mr-2" />
-            Add to Cart
-          </button>
-        </div>
-      ))}
-    </div>
+          <FaShoppingCart className="inline mr-2" />
+          Add to Cart
+        </button>
+      </div>
+    ))}
   </div>
 </div>
 
 
+</div>
+
+
   
-      {/* ✅ Grouped Cart */}
-      <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg h-full">
-        <h2 className="text-2xl font-bold mb-4">Cart</h2>
-        {cart.length === 0 ? (
-          <p className="text-gray-400">Your cart is empty.</p>
-        ) : (
-          <>
-            {/* ✅ Grouped Cart Items */}
-            <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
-              {Object.values(
-                cart.reduce((acc, item) => {
-                  if (acc[item.product?.id]) {
-                    acc[item.product?.id].quantity += item.quantity;
-                  } else {
-                    acc[item.product?.id] = { ...item };
-                  }
-                  return acc;
-                }, {})
-              ).map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-center bg-gray-700 p-2 rounded transition-all duration-300"
-                >
-                  <span>
-                    {item.product?.name} x{item.quantity}
-                  </span>
-                  <span>₱{(item.price * item.quantity).toFixed(2)}</span>
-                  <button onClick={() => removeFromCart(item.id)}>
-                    <FaTrash className="text-red-500" />
-                  </button>
-                </div>
-              ))}
+<div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg h-full">
+  <h2 className="text-2xl font-bold mb-4">Cart</h2>
+  {cart.length === 0 ? (
+    <p className="text-gray-400">Your cart is empty.</p>
+  ) : (
+    <>
+      {/* ✅ Grouped Cart Items */}
+      <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
+        {Object.values(
+          cart.reduce((acc, item) => {
+            if (acc[item.product?.id]) {
+              acc[item.product?.id].quantity += item.quantity;
+            } else {
+              acc[item.product?.id] = { ...item };
+            }
+            return acc;
+          }, {})
+        ).map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center justify-between bg-gray-700 p-2 rounded"
+          >
+            {/* ✅ Product Name */}
+            <div className="flex-1 truncate">
+              {item.product?.name} x{item.quantity}
             </div>
-  
-            {/* ✅ Summary */}
-            <div className="mt-4 space-y-2">
-              {/* ✅ Discount Input */}
-              <div className="flex items-center gap-2">
-                <select
-                  className="bg-gray-700 text-white p-2 rounded w-1/3"
-                  value={discountType}
-                  onChange={(e) => setDiscountType(e.target.value)}
-                >
-                  <option value="none">No Discount</option>
-                  <option value="percentage">% (Percentage)</option>
-                  <option value="fixed">₱ (Fixed Amount)</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="Discount Value"
-                  className="bg-gray-700 text-white p-2 rounded w-2/3"
-                  value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
-                />
-              </div>
-  
-              {/* ✅ Total, Discount, and Final Price */}
-              <div className="flex justify-between text-gray-400">
-                <span>Total:</span>
-                <span>₱{totalPrice.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Discount:</span>
-                <span>-₱{discountAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-bold">
-                <span>Final Price:</span>
-                <span>₱{finalPrice.toFixed(2)}</span>
-              </div>
+
+            {/* ✅ Price */}
+            <div className="w-24 text-right">
+              ₱{(item.price * item.quantity).toFixed(2)}
             </div>
-  
-            {/* ✅ Customer Name */}
-            <div className="mt-4">
-              <input
-                type="text"
-                placeholder="Customer Name (Optional)"
-                className="bg-gray-700 text-white w-full p-2 rounded"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
+
+            {/* ✅ Delete Button */}
+            <div className="w-8 flex justify-end">
+              <button onClick={() => removeFromCart(item.id)}>
+                <FaTrash className="text-red-500" />
+              </button>
             </div>
-  
-            {/* ✅ Payment Method */}
-            <div className="mt-4">
-              <select
-                className="bg-gray-700 text-white w-full p-2 rounded"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <option value="cash">Cash</option>
-                <option value="card">Card</option>
-              </select>
-            </div>
-  
-            {/* ✅ Amount Paid */}
-            <div className="mt-2">
-              <input
-                type="number"
-                placeholder="Amount Paid"
-                className="bg-gray-700 text-white w-full p-2 rounded"
-                value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
-              />
-            </div>
-  
-            {/* ✅ Display Change */}
-            <div className="flex justify-between mt-2 text-gray-400">
-              <span>Change:</span>
-              <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
-            </div>
-  
-            {/* ✅ Checkout Button */}
-            <button
-              className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
-                !canCheckout
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-green-500"
-              }`}
-              onClick={checkout}
-              disabled={!canCheckout}
-            >
-              Place Order - ₱{finalPrice.toFixed(2)}
-            </button>
-          </>
-        )}
+          </div>
+        ))}
       </div>
+
+      {/* ✅ Summary */}
+      <div className="mt-4 space-y-2">
+        <div className="flex items-center gap-2">
+          <select
+            className="bg-gray-700 text-white p-2 rounded w-1/3"
+            value={discountType}
+            onChange={(e) => setDiscountType(e.target.value)}
+          >
+            <option value="none">No Discount</option>
+            <option value="percentage">% (Percentage)</option>
+            <option value="fixed">₱ (Fixed Amount)</option>
+          </select>
+          <input
+            type="number"
+            placeholder="Discount Value"
+            className="bg-gray-700 text-white p-2 rounded w-2/3"
+            value={discountValue}
+            onChange={(e) => setDiscountValue(e.target.value)}
+          />
+        </div>
+
+        <div className="flex justify-between text-gray-400">
+          <span>Total:</span>
+          <span>₱{totalPrice.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-gray-400">
+          <span>Discount:</span>
+          <span>-₱{discountAmount.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between font-bold">
+          <span>Final Price:</span>
+          <span>₱{finalPrice.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* ✅ Customer Name */}
+      <div className="mt-4">
+        <input
+          type="text"
+          placeholder="Customer Name (Optional)"
+          className="bg-gray-700 text-white w-full p-2 rounded"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+        />
+      </div>
+
+      {/* ✅ Payment Method */}
+      <div className="mt-4">
+        <select
+          className="bg-gray-700 text-white w-full p-2 rounded"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+        >
+          <option value="cash">Cash</option>
+          <option value="card">Card</option>
+        </select>
+      </div>
+
+      {/* ✅ Amount Paid */}
+      <div className="mt-2">
+        <input
+          type="number"
+          placeholder="Amount Paid"
+          className="bg-gray-700 text-white w-full p-2 rounded"
+          value={amountPaid}
+          onChange={(e) => setAmountPaid(e.target.value)}
+        />
+      </div>
+
+      {/* ✅ Display Change */}
+      <div className="flex justify-between mt-2 text-gray-400">
+        <span>Change:</span>
+        <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
+      </div>
+
+      {/* ✅ Checkout Button */}
+      <button
+        className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
+          !canCheckout
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:bg-green-500"
+        }`}
+        onClick={checkout}
+        disabled={!canCheckout}
+      >
+        Place Order - ₱{finalPrice.toFixed(2)}
+      </button>
+    </>
+  )}
+</div>
+      
     </div>
   );  
   
