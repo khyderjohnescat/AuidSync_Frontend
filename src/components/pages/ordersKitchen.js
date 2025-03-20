@@ -8,6 +8,7 @@ const OrderList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [editingStatus, setEditingStatus] = useState(null); // Track which order's status is being edited
 
   const [filters, setFilters] = useState({
     search: "",
@@ -16,7 +17,6 @@ const OrderList = () => {
     payment_method: "",
   });
 
-  // Debounce the filters to prevent multiple API calls
   const debouncedFilters = useMemo(() => {
     return () => {
       const handler = setTimeout(() => {
@@ -80,11 +80,28 @@ const OrderList = () => {
     setSelectedOrder(null);
   };
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await axiosInstance.patch(`/orders/${orderId}/status`, { status: newStatus });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
+      }
+      setEditingStatus(null);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      setError("Failed to update order status");
+    }
+  };
+
   const OrderModal = ({ selectedOrder, handleCloseModal }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    // Group and reduce order items
     const orderItems = Object.values(
       selectedOrder.orderItems?.reduce((acc, item) => {
         const productName = item.product?.name || "N/A";
@@ -101,14 +118,12 @@ const OrderList = () => {
       }, {}) || {}
     );
 
-    // Pagination calculations
     const totalItems = orderItems.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedItems = orderItems.slice(startIndex, endIndex);
 
-    // Pagination handlers
     const handlePrevious = () => {
       if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
@@ -126,7 +141,6 @@ const OrderList = () => {
           className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-5xl text-white relative max-h-[90vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close Button */}
           <button
             onClick={handleCloseModal}
             className="absolute top-3 right-3 bg-red-500 hover:bg-red-400 text-white rounded-full w-8 h-8 flex items-center justify-center"
@@ -139,7 +153,6 @@ const OrderList = () => {
           </h2>
 
           <div className="flex gap-6">
-            {/* Order Items (Left Side) with Pagination */}
             {selectedOrder.orderItems?.length > 0 && (
               <div className="w-2/5 border-r border-gray-700 pr-4 max-h-[400px] flex flex-col">
                 <h3 className="text-lg font-bold mb-2">Order Items</h3>
@@ -158,7 +171,6 @@ const OrderList = () => {
                     ))}
                   </div>
                 </div>
-                {/* Pagination Controls */}
                 {totalItems > itemsPerPage && (
                   <div className="mt-2 flex justify-between items-center text-sm">
                     <button
@@ -191,7 +203,6 @@ const OrderList = () => {
               </div>
             )}
 
-            {/* Order Details (Right Side) */}
             <div className="w-3/5">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
@@ -233,8 +244,8 @@ const OrderList = () => {
     <div className="bg-gray-950 min-h-screen p-4 text-gray-200">
       <h2 className="text-2xl font-bold mb-4 text-black">Order List</h2>
 
-    {/* Filter Section */}
-    <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
+      {/* Filter Section */}
+      <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
         <input
           type="text"
           name="search"
@@ -277,65 +288,90 @@ const OrderList = () => {
           Clear Filters
         </button>
       </div>
-      
 
       {/* Table Section */}
       <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
-  <table className="min-w-full table-auto text-base"> {/* Changed text-sm to text-base */}
-    <thead className="bg-gray-700 text-white">
-      <tr>
-        {[
-          "ID",
-          "Order Type",
-          "Customer",
-          "Staff",
-          "Discount Type",
-          "Value",
-          "Amount",
-          "Final Price",
-          "Payment",
-          "Paid",
-          "Change",
-          "Status",
-          "Created At",
-          "Actions",
-        ].map((header) => (
-          <th key={header} className="p-3 text-left"> {/* Increased padding */}
-            {header}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {orders.map((order) => (
-        <tr key={order.id} className="hover:bg-gray-700">
-          <td className="p-3">{order.id}</td> {/* Increased padding */}
-          <td className="p-3">{order.order_type}</td>
-          <td className="p-3">{order.customer_name || "N/A"}</td>
-          <td className="p-3">{order.staff_name || "N/A"}</td>
-          <td className="p-3">{order.discount_type || "None"}</td>
-          <td className="p-3">₱{order.discount_value || "0.00"}</td>
-          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-          <td className="p-3">₱{order.final_price}</td>
-          <td className="p-3">{order.payment_method}</td>
-          <td className="p-3">₱{order.amount_paid}</td>
-          <td className="p-3">₱{order.change}</td>
-          <td className="p-3">{order.status}</td>
-          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-          <td className="p-3">
-            <button
-              onClick={() => handleViewOrderDetails(order.id)}
-              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-            >
-              View
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
+        <table className="min-w-full table-auto text-base">
+          <thead className="bg-gray-700 text-white">
+            <tr>
+              {[
+                "ID",
+                "Order Type",
+                "Customer",
+                "Staff",
+                "Discount Type",
+                "Value",
+                "Amount",
+                "Final Price",
+                "Payment",
+                "Paid",
+                "Change",
+                "Status",
+                "Created At",
+                "Actions",
+              ].map((header) => (
+                <th key={header} className="p-3 text-left">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id} className="hover:bg-gray-700">
+                <td className="p-3">{order.id}</td>
+                <td className="p-3">{order.order_type}</td>
+                <td className="p-3">{order.customer_name || "N/A"}</td>
+                <td className="p-3">{order.staff_name || "N/A"}</td>
+                <td className="p-3">{order.discount_type || "None"}</td>
+                <td className="p-3">₱{order.discount_value || "0.00"}</td>
+                <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+                <td className="p-3">₱{order.final_price}</td>
+                <td className="p-3">{order.payment_method}</td>
+                <td className="p-3">₱{order.amount_paid}</td>
+                <td className="p-3">₱{order.change}</td>
+                <td className="p-3 relative">
+                  <div className="flex items-center gap-2">
+                    <span>{order.status}</span>
+                    <button
+                      onClick={() => setEditingStatus(editingStatus === order.id ? null : order.id)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  </div>
+                  {editingStatus === order.id && (
+                    <div className="absolute z-10 mt-1 left-0 bg-gray-700 border border-gray-600 rounded-md shadow-lg">
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        className="bg-gray-700 text-white rounded-md px-2 py-1 text-sm w-full"
+                        autoFocus
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  )}
+                </td>
+                <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+                <td className="p-3">
+                  <button
+                    onClick={() => handleViewOrderDetails(order.id)}
+                    className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal for Order Details */}
       {selectedOrder && (

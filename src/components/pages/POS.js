@@ -227,7 +227,7 @@ const POS = () => {
 
  {/* ✅ Scrollable container */}
 <div className="flex-1 overflow-y-auto">
-  <div className="grid grid-cols-3 lg:grid-cols-3 gap-3">
+  <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
     {filteredProducts.map((product) => (
       <div
         key={product.id}
