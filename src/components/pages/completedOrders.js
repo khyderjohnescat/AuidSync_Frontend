@@ -303,7 +303,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
                 "Change",
                 "Status",
                 "Created At",
-                "Actions",
+                "",
               ].map((header) => (
                 <th key={header} className="p-3 text-left">
                   {header}

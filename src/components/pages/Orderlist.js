@@ -356,7 +356,7 @@ const OrderList = ({ isOpen }) => {
                 "Change",
                 "Status",
                 "Created At",
-                "Actions",
+                "",
               ].map((header) => (
                 <th key={header} className="p-3 text-left">
                   {header}
