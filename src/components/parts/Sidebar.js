@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBars } from "react-icons/fa";
-import { MdSpaceDashboard, MdRestaurantMenu, MdAttachMoney, MdInventory } from "react-icons/md";
+import { MdSpaceDashboard, MdRestaurantMenu, MdInventory } from "react-icons/md";
 import { HiOutlineClipboardList } from "react-icons/hi";
 import { IoSettingsOutline, IoLogOutOutline } from "react-icons/io5";
 import AuthContext from "../../context/AuthContext";
@@ -28,7 +28,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <NavItem to="/dashboard" icon={<MdSpaceDashboard />} text="Dashboard" isOpen={isOpen} location={location} />
         <NavItem to="/pos" icon={<MdRestaurantMenu />} text="Order Menu" isOpen={isOpen} location={location} />
         <NavItem to="/orderlist" icon={<HiOutlineClipboardList />} text="Order List" isOpen={isOpen} location={location} />
-        <NavItem to="/ordersKitchen" icon={<MdAttachMoney />} text="Sales" isOpen={isOpen} location={location} />
+        <NavItem to="/ordersKitchen" icon={<HiOutlineClipboardList />} text="Orders (Kitchen)" isOpen={isOpen} location={location} />
         <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
       </nav>
       

@@ -1,16 +1,13 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import axiosInstance from "../../context/axiosInstance";
 
-const OrderList = ({ isOpen }) => {
+const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [editingStatus, setEditingStatus] = useState(null);
-  const [notification, setNotification] = useState(null);
 
   const [filters, setFilters] = useState({
     search: "",
@@ -19,6 +16,7 @@ const OrderList = ({ isOpen }) => {
     payment_method: "",
   });
 
+  // Debounce filters
   const debouncedFilters = useMemo(() => {
     return () => {
       const handler = setTimeout(() => {
@@ -32,10 +30,12 @@ const OrderList = ({ isOpen }) => {
     const cancel = debouncedFilters();
     fetchOrders(); // Initial fetch
 
+    // Set up polling to refresh every 500ms
     const pollingInterval = setInterval(() => {
       fetchOrders();
     }, 500);
 
+    // Cleanup on unmount
     return () => {
       cancel();
       clearInterval(pollingInterval);
@@ -50,13 +50,13 @@ const OrderList = ({ isOpen }) => {
       const response = await axiosInstance.get("/orders", {
         params: {
           ...filters,
-          status_not: "completed", // Exclude completed orders
+          status: "completed", // Only fetch completed orders
         },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      setError("Failed to fetch orders");
+      setError("Failed to fetch completed orders");
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,6 @@ const OrderList = ({ isOpen }) => {
     try {
       const response = await axiosInstance.get(`/orders/${orderId}`);
       setSelectedOrder(response.data);
-      await fetchOrders();
     } catch (error) {
       setError("Failed to fetch order details");
     }
@@ -92,39 +91,6 @@ const OrderList = ({ isOpen }) => {
 
   const handleCloseModal = () => {
     setSelectedOrder(null);
-    fetchOrders();
-  };
-
-  const handleStatusChange = async (orderId, newStatus) => {
-    if (!newStatus || newStatus === "select") return; // Ignore if "Select Status" is chosen
-    try {
-      await axiosInstance.patch(`/orders/${orderId}/status`, { status: newStatus });
-      setEditingStatus(null);
-
-      setNotification({
-        message: `Order number ${orderId} status updated to "${newStatus}"`,
-        type: "success",
-      });
-
-      await fetchOrders();
-
-      if (selectedOrder && selectedOrder.id === orderId) {
-        if (newStatus === "completed" || newStatus === "cancelled") {
-          setSelectedOrder(null);
-        } else {
-          setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
-        }
-      }
-
-      setTimeout(() => setNotification(null), 3000);
-    } catch (error) {
-      setError("Failed to update order status");
-      setNotification({
-        message: "Failed to update order status",
-        type: "error",
-      });
-      setTimeout(() => setNotification(null), 3000);
-    }
   };
 
   const OrderModal = ({ selectedOrder, handleCloseModal }) => {
@@ -174,7 +140,7 @@ const OrderList = ({ isOpen }) => {
           </button>
 
           <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-            Order Details
+            Completed Order Details
           </h2>
 
           <div className="flex gap-6">
@@ -267,29 +233,10 @@ const OrderList = ({ isOpen }) => {
 
   return (
     <div
-      className={`bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300`}
-      style={{ paddingLeft: isOpen ? '200px' : '50px' }} // Smaller padding
+      className="bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300"
+      style={{ paddingLeft: isOpen ? '200px' : '50px' }} // Match padding with general OrderList
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-black">Order List</h2>
-        <Link
-          to="/completedorders"
-          className="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md"
-        >
-          View Completed Orders
-        </Link>
-      </div>
-
-      {/* Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-md text-white ${
-            notification.type === "success" ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {notification.message}
-        </div>
-      )}
+      <h2 className="text-2xl font-bold mb-4 text-black">Completed Orders</h2>
 
       {/* Filter Section */}
       <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
@@ -378,32 +325,7 @@ const OrderList = ({ isOpen }) => {
                 <td className="p-3">{order.payment_method}</td>
                 <td className="p-3">₱{order.amount_paid}</td>
                 <td className="p-3">₱{order.change}</td>
-                <td className="p-3 relative">
-                  <div className="flex items-center gap-2">
-                    <span>{order.status}</span>
-                    <button
-                      onClick={() => setEditingStatus(editingStatus === order.id ? null : order.id)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                  </div>
-                  {editingStatus === order.id && (
-                    <div className="absolute z-10 mt-1 left-0 bg-gray-700 border border-gray-600 rounded-md shadow-lg">
-                      <select
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="bg-gray-700 text-white rounded-md px-2 py-1 text-sm w-full"
-                        autoFocus
-                      >
-                        <option value="select" disabled selected>Select Status</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </div>
-                  )}
-                </td>
+                <td className="p-3">{order.status}</td>
                 <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
                 <td className="p-3">
                   <button
@@ -430,4 +352,4 @@ const OrderList = ({ isOpen }) => {
   );
 };
 
-export default OrderList;
+export default CompletedOrders;

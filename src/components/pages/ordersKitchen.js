@@ -3,12 +3,13 @@
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../context/axiosInstance";
 
-const OrderList = () => {
+const OrderList = ({ isOpen }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [editingStatus, setEditingStatus] = useState(null); // Track which order's status is being edited
+  const [editingStatus, setEditingStatus] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const [filters, setFilters] = useState({
     search: "",
@@ -22,13 +23,13 @@ const OrderList = () => {
       const handler = setTimeout(() => {
         fetchOrders();
       }, 500);
-
       return () => clearTimeout(handler);
     };
   }, [filters]);
 
   useEffect(() => {
     const cancel = debouncedFilters();
+    fetchOrders(); // Initial fetch
     return () => cancel();
   }, [debouncedFilters]);
 
@@ -37,10 +38,12 @@ const OrderList = () => {
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/orders", {
+      const response = await axiosInstance.get("/orders/kitchen/", {
         params: filters,
+        headers: { "Cache-Control": "no-cache" }, // Ensure fresh data
       });
-      setOrders(response.data);
+      console.log("Fetched orders:", response.data); // Debug log
+      setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setError("Failed to fetch orders");
@@ -64,6 +67,7 @@ const OrderList = () => {
       date: "",
       payment_method: "",
     });
+    fetchOrders(); // Immediate refresh
   };
 
   const handleViewOrderDetails = async (orderId) => {
@@ -83,18 +87,36 @@ const OrderList = () => {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axiosInstance.patch(`/orders/${orderId}/status`, { status: newStatus });
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-      if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
-      }
       setEditingStatus(null);
+
+      // Show notification
+      setNotification({
+        message: `Order number ${orderId} status updated to "${newStatus}"`,
+        type: "success",
+      });
+
+      // Immediately refresh the orders list
+      await fetchOrders();
+
+      // Handle modal behavior
+      if (selectedOrder && selectedOrder.id === orderId) {
+        if (newStatus === "ready") {
+          setSelectedOrder(null); // Close modal on "ready"
+        } else {
+          setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
+        }
+      }
+
+      // Clear notification after 3 seconds
+      setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error("Error updating order status:", error);
       setError("Failed to update order status");
+      setNotification({
+        message: "Failed to update order status",
+        type: "error",
+      });
+      setTimeout(() => setNotification(null), 3000);
     }
   };
 
@@ -106,11 +128,7 @@ const OrderList = () => {
       selectedOrder.orderItems?.reduce((acc, item) => {
         const productName = item.product?.name || "N/A";
         if (!acc[productName]) {
-          acc[productName] = {
-            ...item,
-            quantity: 0,
-            totalPrice: 0,
-          };
+          acc[productName] = { ...item, quantity: 0, totalPrice: 0 };
         }
         acc[productName].quantity += item.quantity;
         acc[productName].totalPrice += item.quantity * Number(item.price || 0);
@@ -241,8 +259,22 @@ const OrderList = () => {
   };
 
   return (
-    <div className="bg-gray-950 min-h-screen p-4 text-gray-200">
-      <h2 className="text-2xl font-bold mb-4 text-black">Order List</h2>
+    <div
+      className="bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300"
+      style={{ paddingLeft: isOpen ? '200px' : '50px' }} // Match padding with the second component
+    >
+      <h2 className="text-2xl font-bold mb-4 text-black">Kitchen Order List</h2>
+
+      {/* Notification */}
+      {notification && (
+        <div
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-md text-white ${
+            notification.type === "success" ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          {notification.message}
+        </div>
+      )}
 
       {/* Filter Section */}
       <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
@@ -290,6 +322,7 @@ const OrderList = () => {
       </div>
 
       {/* Table Section */}
+      {error && <div className="text-center text-red-500">{error}</div>}
       <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
         <table className="min-w-full table-auto text-base">
           <thead className="bg-gray-700 text-white">
@@ -352,8 +385,7 @@ const OrderList = () => {
                       >
                         <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="ready">Ready</option>
                       </select>
                     </div>
                   )}
