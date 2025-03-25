@@ -188,8 +188,8 @@ function ProductManager() {
   });
 
   return (
-    <div className="p-6 text-white">
-      <h2 className="text-2xl font-bold mb-4 text-black">Product Management</h2>
+    <div className="p-6 bg-gray-900 text-white">
+      <h2 className="text-2xl font-bold mb-4 text-White text-center">Product Management</h2>
 
       {/* Button Group */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">

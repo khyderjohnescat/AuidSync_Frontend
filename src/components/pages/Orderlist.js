@@ -160,7 +160,7 @@ const OrderList = ({ isOpen }) => {
 
     return (
       <div
-        className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
+        className="fixed inset-0 bg-black bg-opacity-100 flex justify-center items-center z-50 p-4"
         onClick={handleCloseModal}
       >
         <div
@@ -267,7 +267,7 @@ const OrderList = ({ isOpen }) => {
                     {selectedOrder.discount_type || "None"}
                   </p>
                   <p>
-                    <span className="font-semibold">Discount Value:</span> ₱
+                    <span className="font-semibold">Discount Value:</span> 
                     {selectedOrder.discount_value || "0.00"}
                   </p>
                   <p>
@@ -366,11 +366,11 @@ const OrderList = ({ isOpen }) => {
 
   return (
     <div
-      className={`bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300`}
+      className={`bg-gray-900 min-h-screen p-4 text-gray-200 transition-all duration-300`}
       style={{ paddingLeft: isOpen ? "30px" : "30px" }}
     >
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Order List</h2>
+        <h2 className="text-2xl font-bold text-white">Order List</h2>
         <div className="flex gap-4">
           <Link
             to="/completedorders"
@@ -488,7 +488,7 @@ const OrderList = ({ isOpen }) => {
           <td className="p-3">{order.customer_name || "N/A"}</td>
           <td className="p-3">{order.staff_name || "N/A"}</td>
           <td className="p-3">{order.discount_type || "None"}</td>
-          <td className="p-3">₱{order.discount_value || "0.00"}</td>
+          <td className="p-3">{order.discount_value || "0.00"}</td>
           <td className="p-3">₱{order.discount_amount || "0.00"}</td>
           <td className="p-3">₱{order.final_price}</td>
           <td className="p-3">{order.payment_method}</td>

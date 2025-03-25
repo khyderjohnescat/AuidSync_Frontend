@@ -151,7 +151,7 @@ const OrderList = ({ isOpen }) => {
 
     return (
       <div
-        className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
+        className="fixed inset-0 bg-black flex justify-center items-center z-50 p-4"
         onClick={handleCloseModal}
       >
         <div
@@ -355,12 +355,12 @@ const OrderList = ({ isOpen }) => {
 
   return (
     <div
-      className="bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300"
+      className="bg-gray-900 min-h-screen p-4 text-gray-200 transition-all duration-300"
       style={{ paddingLeft: isOpen ? "30px" : "30px" }}
     >
-     <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Kitchen Order List</h2>
-        <div className="flex gap-4">
+     <div className="mb-6">
+        <h2 className=" text-2xl font-bold text-white text-center">Kitchen Order List</h2>
+        <div className="gap-2 text-right">
           <Link
             to="/readyorders"
             className="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
