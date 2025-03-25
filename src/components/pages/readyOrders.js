@@ -234,7 +234,7 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
   return (
     <div
       className="bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300"
-      style={{ paddingLeft: isOpen ? '200px' : '50px' }} // Match padding with general OrderList
+      style={{ paddingLeft: isOpen ? '30px' : '30px' }} // Match padding with general OrderList
     >
       <h2 className="text-2xl font-bold mb-4 text-black">Ready Orders</h2>
 
