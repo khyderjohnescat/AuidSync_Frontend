@@ -9,7 +9,7 @@ const OrderList = ({ isOpen }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [editingStatus, setEditingStatus] = useState(null);
+  const [statusModalOrderId, setStatusModalOrderId] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const [filters, setFilters] = useState({
@@ -96,13 +96,14 @@ const OrderList = ({ isOpen }) => {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
-    if (!newStatus || newStatus === "select") return; // Ignore if "Select Status" is chosen
     try {
-      await axiosInstance.patch(`/orders/${orderId}/status`, { status: newStatus });
-      setEditingStatus(null);
+      await axiosInstance.patch(`/orders/${orderId}/status`, {
+        status: newStatus,
+      });
+      setStatusModalOrderId(null); // Close the status modal
 
       setNotification({
-        message: `Order number ${orderId} status updated to "${newStatus}"`,
+        message: `Order number ${orderId} is now "${newStatus}"`,
         type: "success",
       });
 
@@ -120,7 +121,7 @@ const OrderList = ({ isOpen }) => {
     } catch (error) {
       setError("Failed to update order status");
       setNotification({
-        message: "Failed to update order status",
+        message: "Couldn’t update the order status",
         type: "error",
       });
       setTimeout(() => setNotification(null), 3000);
@@ -188,10 +189,18 @@ const OrderList = ({ isOpen }) => {
                         key={item.product?.name}
                         className="flex justify-between text-sm border-b border-gray-700 pb-1"
                       >
-                        <span className="w-1/3 truncate">{item.product?.name || "N/A"}</span>
-                        <span className="w-1/6 text-center">{item.quantity}</span>
-                        <span className="w-1/6 text-center">₱{Number(item.price || 0).toFixed(2)}</span>
-                        <span className="w-1/6 text-right">₱{item.totalPrice.toFixed(2)}</span>
+                        <span className="w-1/3 truncate">
+                          {item.product?.name || "N/A"}
+                        </span>
+                        <span className="w-1/6 text-center">
+                          {item.quantity}
+                        </span>
+                        <span className="w-1/6 text-center">
+                          ₱{Number(item.price || 0).toFixed(2)}
+                        </span>
+                        <span className="w-1/6 text-right">
+                          ₱{item.totalPrice.toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -231,27 +240,63 @@ const OrderList = ({ isOpen }) => {
             <div className="w-3/5">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <p><span className="font-semibold">Order ID:</span> {selectedOrder.id}</p>
-                  <p><span className="font-semibold">Customer:</span> {selectedOrder.customer_name || "N/A"}</p>
-                  <p><span className="font-semibold">Order Type:</span> {selectedOrder.order_type}</p>
-                  <p><span className="font-semibold">Staff:</span> {selectedOrder.staff_name || "N/A"}</p>
+                  <p>
+                    <span className="font-semibold">Order ID:</span>{" "}
+                    {selectedOrder.id}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Customer:</span>{" "}
+                    {selectedOrder.customer_name || "N/A"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Order Type:</span>{" "}
+                    {selectedOrder.order_type}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Staff:</span>{" "}
+                    {selectedOrder.staff_name || "N/A"}
+                  </p>
                 </div>
                 <div>
-                  <p><span className="font-semibold">Payment Method:</span> {selectedOrder.payment_method}</p>
-                  <p><span className="font-semibold">Discount Type:</span> {selectedOrder.discount_type || "None"}</p>
-                  <p><span className="font-semibold">Discount Value:</span> ₱{selectedOrder.discount_value || "0.00"}</p>
-                  <p><span className="font-semibold">Discount Amount:</span> ₱{selectedOrder.discount_amount || "0.00"}</p>
+                  <p>
+                    <span className="font-semibold">Payment Method:</span>{" "}
+                    {selectedOrder.payment_method}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Discount Type:</span>{" "}
+                    {selectedOrder.discount_type || "None"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Discount Value:</span> ₱
+                    {selectedOrder.discount_value || "0.00"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Discount Amount:</span> ₱
+                    {selectedOrder.discount_amount || "0.00"}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <p><span className="font-semibold">Final Price:</span> ₱{selectedOrder.final_price}</p>
-                  <p><span className="font-semibold">Amount Paid:</span> ₱{selectedOrder.amount_paid}</p>
+                  <p>
+                    <span className="font-semibold">Final Price:</span> ₱
+                    {selectedOrder.final_price}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Amount Paid:</span> ₱
+                    {selectedOrder.amount_paid}
+                  </p>
                 </div>
                 <div>
-                  <p><span className="font-semibold">Change:</span> ₱{selectedOrder.change}</p>
-                  <p><span className="font-semibold">Status:</span> {selectedOrder.status}</p>
+                  <p>
+                    <span className="font-semibold">Change:</span> ₱
+                    {selectedOrder.change}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Status:</span>{" "}
+                    {selectedOrder.status}
+                  </p>
                   <p>
                     <span className="font-semibold">Created At:</span>{" "}
                     {new Date(selectedOrder.created_at).toLocaleString()}
@@ -265,19 +310,81 @@ const OrderList = ({ isOpen }) => {
     );
   };
 
+  const StatusModal = ({ order, onClose }) => {
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
+        onClick={onClose}
+      >
+        <div
+          className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-md text-white"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-xl font-bold mb-4">
+            Update Order #{order.id} Status
+          </h3>
+          <p className="mb-4">
+            Current Status:{" "}
+            <span className="font-semibold">{order.status}</span>
+          </p>
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={() => handleStatusChange(order.id, "completed")}
+              disabled={order.status !== "ready"}
+              className={`p-4 rounded-lg text-center ${
+                order.status !== "ready"
+                  ? "bg-gray-600 cursor-not-allowed text-gray-400"
+                  : "bg-green-500 hover:bg-green-400 text-white"
+              }`}
+            >
+              <span className="font-semibold">Mark as Completed</span>
+            </button>
+            {order.status !== "ready" && (
+              <button
+                onClick={() => handleStatusChange(order.id, "cancelled")}
+                disabled={order.status === "processing"}
+                className={`p-4 rounded-lg text-center ${
+                  order.status === "processing"
+                    ? "bg-gray-600 cursor-not-allowed text-gray-400"
+                    : "bg-red-500 hover:bg-red-400 text-white"
+                }`}
+              >
+                <span className="font-semibold">Cancel Order</span>
+              </button>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="mt-4 w-full bg-gray-500 hover:bg-gray-400 text-white py-2 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className={`bg-gray-950 min-h-screen p-4 text-gray-200 transition-all duration-300`}
-      style={{ paddingLeft: isOpen ? '200px' : '50px' }} // Smaller padding
+      style={{ paddingLeft: isOpen ? "30px" : "30px" }}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-black">Order List</h2>
-        <Link
-          to="/completedorders"
-          className="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md"
-        >
-          View Completed Orders
-        </Link>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Order List</h2>
+        <div className="flex gap-4">
+          <Link
+            to="/completedorders"
+            className="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            View Completed Orders
+          </Link>
+          <Link
+            to="/cancelledorders"
+            className="bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            View Cancelled Orders
+          </Link>
+        </div>
       </div>
 
       {/* Notification */}
@@ -337,93 +444,85 @@ const OrderList = ({ isOpen }) => {
       </div>
 
       {/* Table Section */}
-      {error && <div className="text-center text-red-500">{error}</div>}
-      <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
-        <table className="min-w-full table-auto text-base">
-          <thead className="bg-gray-700 text-white">
-            <tr>
-              {[
-                "ID",
-                "Order Type",
-                "Customer",
-                "Staff",
-                "Discount Type",
-                "Value",
-                "Amount",
-                "Final Price",
-                "Payment",
-                "Paid",
-                "Change",
-                "Status",
-                "Created At",
-                "",
-              ].map((header) => (
-                <th key={header} className="p-3 text-left">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-700">
-                <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.order_type}</td>
-                <td className="p-3">{order.customer_name || "N/A"}</td>
-                <td className="p-3">{order.staff_name || "N/A"}</td>
-                <td className="p-3">{order.discount_type || "None"}</td>
-                <td className="p-3">₱{order.discount_value || "0.00"}</td>
-                <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-                <td className="p-3">₱{order.final_price}</td>
-                <td className="p-3">{order.payment_method}</td>
-                <td className="p-3">₱{order.amount_paid}</td>
-                <td className="p-3">₱{order.change}</td>
-                <td className="p-3 relative">
-                  <div className="flex items-center gap-2">
-                    <span>{order.status}</span>
-                    <button
-                      onClick={() => setEditingStatus(editingStatus === order.id ? null : order.id)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                  </div>
-                  {editingStatus === order.id && (
-                    <div className="absolute z-10 mt-1 left-0 bg-gray-700 border border-gray-600 rounded-md shadow-lg">
-                      <select
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="bg-gray-700 text-white rounded-md px-2 py-1 text-sm w-full"
-                        autoFocus
-                      >
-                        <option value="select" disabled selected>Select Status</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </div>
-                  )}
-                </td>
-                <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-                <td className="p-3">
-                  <button
-                    onClick={() => handleViewOrderDetails(order.id)}
-                    className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-                  >
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+{error && <div className="text-center text-red-500">{error}</div>}
+<div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
+  <table className="min-w-full table-auto text-base">
+    <thead className="bg-gray-700 text-white">
+      <tr>
+        {[
+          "ID",
+          "Order Type",
+          "Order",
+          "Customer",
+          "Staff",
+          "Discount Type",
+          "Value",
+          "Amount",
+          "Final Price",
+          "Payment",
+          "Paid",
+          "Change",
+          "Created At",
+          "Status",
+          "Actions",
+        ].map((header) => (
+          <th key={header} className="p-3 text-left">
+            {header}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {orders.map((order) => (
+        <tr key={order.id} className="hover:bg-gray-700">
+          <td className="p-3">{order.id}</td>
+          <td className="p-3">{order.order_type}</td>
+          <td className="p-3">
+            <button
+              onClick={() => handleViewOrderDetails(order.id)}
+              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+            >
+              View
+            </button>
+          </td>
+          <td className="p-3">{order.customer_name || "N/A"}</td>
+          <td className="p-3">{order.staff_name || "N/A"}</td>
+          <td className="p-3">{order.discount_type || "None"}</td>
+          <td className="p-3">₱{order.discount_value || "0.00"}</td>
+          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+          <td className="p-3">₱{order.final_price}</td>
+          <td className="p-3">{order.payment_method}</td>
+          <td className="p-3">₱{order.amount_paid}</td>
+          <td className="p-3">₱{order.change}</td>
+          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+          <td className="p-3">{order.status}</td>
+          <td className="p-3">
+            <button
+              onClick={() => setStatusModalOrderId(order.id)}
+              className="bg-yellow-500 hover:bg-yellow-400 text-white px-2 py-1 rounded text-sm"
+            >
+              Update Status
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
       {/* Modal for Order Details */}
       {selectedOrder && (
         <OrderModal
           selectedOrder={selectedOrder}
           handleCloseModal={handleCloseModal}
+        />
+      )}
+
+      {/* Status Update Modal */}
+      {statusModalOrderId && (
+        <StatusModal
+          order={orders.find((o) => o.id === statusModalOrderId)}
+          onClose={() => setStatusModalOrderId(null)}
         />
       )}
     </div>
