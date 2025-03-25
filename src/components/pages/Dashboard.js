@@ -103,77 +103,79 @@ const Dashboard = () => {
     }), [analytics.popularOrders]);
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen bg-gray-900 shadow-md ">
-            <h1 className="text-3xl font-bold text-white mb-5">Welcome, {user?.firstname || "User"}</h1>
+        <div className="bg-gray-800 gap-2 h-[500px] p-2 bg-gray-950 text-white">
+            <div className="p-6 bg-gray-100 min-h-screen bg-gray-900 shadow-md rounded-lg">
+                <h1 className="text-3xl font-bold text-white mb-5">Welcome, {user?.firstname || "User"}</h1>
 
-            <div className="mb-4  flex justify-end">
-                <label className="mr-2 mt-2 font-semibold text-white">Filter:</label>
-                <select
-                    className="p-2 border rounded"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                </select>
-            </div>
+                <div className="mb-4  flex justify-end">
+                    <label className="mr-2 mt-2 font-semibold text-white">Filter:</label>
+                    <select
+                        className="p-2 border rounded"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6 ">
-                <div className="bg-blue-600 text-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold">Total Revenue ({filter})</h2>
-                    <p className="text-3xl font-bold">₱{analytics.totalSales.toLocaleString()}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-6 ">
+                    <div className="bg-blue-600 text-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold">Total Revenue ({filter})</h2>
+                        <p className="text-3xl font-bold">₱{analytics.totalSales.toLocaleString()}</p>
+                    </div>
+                    <div className="bg-green-600 text-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold">Total Orders ({filter})</h2>
+                        <p className="text-3xl font-bold">{analytics.totalOrders}</p>
+                    </div>
+                    <div className="bg-purple-600 text-white p-6 rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold">Total Profit ({filter})</h2>
+                        <p className="text-3xl font-bold">₱{analytics.totalProfit.toLocaleString()}</p>
+                    </div>
                 </div>
-                <div className="bg-green-600 text-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold">Total Orders ({filter})</h2>
-                    <p className="text-3xl font-bold">{analytics.totalOrders}</p>
-                </div>
-                <div className="bg-purple-600 text-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold">Total Profit ({filter})</h2>
-                    <p className="text-3xl font-bold">₱{analytics.totalProfit.toLocaleString()}</p>
-                </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
-                    <h2 className="text-lg font-semibold mb-4">Most Ordered Products</h2>
-                    <Bar
-                        data={popularOrdersData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: true
-                        }}
-                    />
-                </div>
-                <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
-                    <h2 className="text-lg font-semibold mb-4">Unpopular Products</h2>
-                    <Bar
-                        data={unpopularOrdersData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: true
-                        }}
-                    />
-                </div>
-                <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
-                    <h2 className="text-lg font-semibold mb-4">Profit Trend</h2>
-                    <Line
-                        data={profitChartData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: true
-                        }}
-                    />
-                </div>
-                <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
-                    <h2 className="text-lg font-semibold mb-4">Payment Types</h2>
-                    <Pie
-                        data={paymentTypeData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: true
-                        }}
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
+                        <h2 className="text-lg font-semibold mb-4">Most Ordered Products</h2>
+                        <Bar
+                            data={popularOrdersData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true
+                            }}
+                        />
+                    </div>
+                    <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
+                        <h2 className="text-lg font-semibold mb-4">Unpopular Products</h2>
+                        <Bar
+                            data={unpopularOrdersData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true
+                            }}
+                        />
+                    </div>
+                    <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
+                        <h2 className="text-lg font-semibold mb-4">Profit Trend</h2>
+                        <Line
+                            data={profitChartData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true
+                            }}
+                        />
+                    </div>
+                    <div className="bg-white p-6 shadow-lg rounded-lg h-[300px]">
+                        <h2 className="text-lg font-semibold mb-4">Payment Types</h2>
+                        <Pie
+                            data={paymentTypeData}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: true
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

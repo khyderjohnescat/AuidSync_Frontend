@@ -2,6 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../context/axiosInstance";
+import { Link } from "react-router-dom";
+
 
 const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
@@ -232,10 +234,8 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   };
 
   return (
-    <div
-      className="bg-gray-900 min-h-screen p-4 text-gray-200 transition-all duration-300"
-      style={{ paddingLeft: isOpen ? '30px' : '30px' }} // Match padding with general OrderList
-    >
+    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
+    <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }}>
       <h2 className="text-2xl font-bold mb-6 text-white text-center">Cancelled Orders</h2>
 
       {/* Filter Section */}
@@ -348,6 +348,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
           handleCloseModal={handleCloseModal}
         />
       )}
+    </div>
     </div>
   );
 };

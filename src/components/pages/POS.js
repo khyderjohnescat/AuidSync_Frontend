@@ -265,7 +265,7 @@ const POS = () => {
 
 
   
-<div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg h-auto">
+<div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg ">
   <h2 className="text-2xl font-bold mb-4">Cart</h2>
   {cart.length === 0 ? (
     <p className="text-gray-400">Your cart is empty.</p>

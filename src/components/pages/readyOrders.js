@@ -232,11 +232,9 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
   };
 
   return (
-    <div
-      className="bg-gray-900 min-h-screen p-4 text-gray-200 transition-all duration-300"
-      style={{ paddingLeft: isOpen ? '30px' : '30px' }} // Match padding with general OrderList
-    >
-      <h2 className="text-2xl font-bold mb-6 text-white text-center">Ready Orders</h2>
+    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
+    <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }} >
+      <h2 className="text-2xl font-bold mb-4 text-white text-center">Ready Orders</h2>
 
       {/* Filter Section */}
       <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
@@ -348,6 +346,7 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
           handleCloseModal={handleCloseModal}
         />
       )}
+    </div>
     </div>
   );
 };

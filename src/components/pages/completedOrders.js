@@ -2,6 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../context/axiosInstance";
+import { Link } from "react-router-dom";
+
 
 const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
@@ -232,14 +234,15 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   };
 
   return (
-    <div
-      className="bg-gray-900 min-h-screen p-4 text-gray-200 transition-all duration-300"
-      style={{ paddingLeft: isOpen ? '3-px' : '30px' }} // Match padding with general OrderList
-    >
+    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
+    <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '3-px' : '30px' }}>
       <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Orders</h2>
+      <Link to="/orderlist" className="bg-blue-500 px-4 mb-6 py-2 rounded">
+          Back
+        </Link>
 
       {/* Filter Section */}
-      <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
+      <div className="mt-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
         <input
           type="text"
           name="search"
@@ -285,7 +288,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
 
       {/* Table Section */}
       {error && <div className="text-center text-red-500">{error}</div>}
-      <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
+      <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4">
         <table className="min-w-full table-auto text-base">
           <thead className="bg-gray-700 text-white">
             <tr>
@@ -348,6 +351,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
           handleCloseModal={handleCloseModal}
         />
       )}
+    </div>
     </div>
   );
 };

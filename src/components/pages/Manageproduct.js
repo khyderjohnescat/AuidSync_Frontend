@@ -122,15 +122,15 @@ function ProductManager() {
 
     setEditingId(product.id);
     setPreviewImage(
-        product.image?.startsWith("http")
-          ? product.image
-          : product.image?.includes("uploads/")
+      product.image?.startsWith("http")
+        ? product.image
+        : product.image?.includes("uploads/")
           ? `http://localhost:5050/${product.image.replace(/^\/+/, "")}`
           : product.image
-          ? `http://localhost:5050/uploads/${product.image.replace(/^\/+/, "")}`
-          : ""
-      );
-      
+            ? `http://localhost:5050/uploads/${product.image.replace(/^\/+/, "")}`
+            : ""
+    );
+
 
     setIsModalOpen(true);
   };
@@ -188,7 +188,8 @@ function ProductManager() {
   });
 
   return (
-    <div className="p-6 bg-gray-900 text-white">
+    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
+    <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-screen">
       <h2 className="text-2xl font-bold mb-4 text-White text-center">Product Management</h2>
 
       {/* Button Group */}
@@ -204,44 +205,51 @@ function ProductManager() {
             onClick={() => navigate("/products/deleted")}
             className="bg-red-500 px-4 py-2 rounded flex items-center"
           >
-            <FaTrash className="mr-2" /> Deleted Products
+            <FaTrash className="mr-2" /> Archived Products
           </button>
         </div>
-        <select
-          className="bg-gray-800 p-2 rounded text-white"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="All">All</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id.toString()}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex items-center bg-gray-800 p-2 rounded mb-4">
-        <FaSearch className="text-gray-400 mx-2" />
-        <input
-          type="text"
-          placeholder="Search products..."
-          className="bg-transparent outline-none text-white w-50"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+{/* Search Bar & Category Filter */}
+<div className="flex justify-between items-center bg-gray-800 p-2 rounded mb-4">
+  {/* Search Input */}
+  <div className="flex items-center bg-gray-700 p-2 rounded w-2/3">
+    <FaSearch className="text-gray-400 mx-2" />
+    <input
+      type="text"
+      placeholder="Search products..."
+      className="bg-transparent outline-none text-white w-full px-2"
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+  </div>
+
+  {/* Category Filter */}
+  <select
+    className="bg-gray-700 p-2 rounded text-white w-1/3 ml-2"
+    value={selectedCategory}
+    onChange={(e) => setSelectedCategory(e.target.value)}
+  >
+    <option value="All">All</option>
+    {categories.map((cat) => (
+      <option key={cat.id} value={cat.id.toString()}>
+        {cat.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+
 
       {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 rounded-lg">
         {filteredProducts.map((product) => {
           const imageUrl =
             product.image && product.image.startsWith("http")
               ? product.image
               : product.image?.includes("uploads/")
-              ? `http://localhost:5050/${product.image}`
-              : `http://localhost:5050/uploads/${product.image}`;
+                ? `http://localhost:5050/${product.image}`
+                : `http://localhost:5050/uploads/${product.image}`;
 
           const categoryName =
             categories.find((cat) => cat.id === product.category_id)?.name ||
@@ -377,6 +385,7 @@ function ProductManager() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

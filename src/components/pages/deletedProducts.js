@@ -58,16 +58,15 @@ function DeletedProducts() {
   );
 
   return (
-    <div className="p-6 text-white">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold mb-4 text-black">Deleted Products</h2>
-        <Link to="/manageproduct" className="bg-blue-500 px-4 py-2 rounded">
-          Back to Products
+    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
+    <div className="p-6 bg-gray-900 text-white shadow-md rounded-lg h-auto min-h-screen">
+        <h2 className="text-2xl font-bold mb-6 text-white text-center">Archived Products</h2>
+        <Link to="/manageproduct" className="bg-blue-500 px-4 mb-6 py-2 rounded">
+          Back
         </Link>
-      </div>
 
       {/* Search */}
-      <div className="flex items-center bg-gray-800 p-2 rounded mb-4">
+      <div className="flex items-center bg-gray-800 p-2 rounded mt-4">
         <FaSearch className="text-gray-400 mx-2" />
         <input
           type="text"
@@ -121,6 +120,7 @@ function DeletedProducts() {
           })}
         </div>
       )}
+    </div>
     </div>
   );
 }
