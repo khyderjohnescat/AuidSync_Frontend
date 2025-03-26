@@ -58,7 +58,7 @@ function DiscountManager() {
       const dataToSend = {
         type: formData.type,
         value: parseFloat(formData.value),
-        start_date: formData.start_date,
+        start_date: formData.start_date, // Already in ISO format from datetime-local
         end_date: formData.end_date || null,
         product_id: formData.product_id ? parseInt(formData.product_id) : null,
       };
@@ -68,7 +68,7 @@ function DiscountManager() {
         return;
       }
       if (!dataToSend.start_date) {
-        setError("Start date is required");
+        setError("Start date and time are required");
         return;
       }
 
@@ -87,11 +87,17 @@ function DiscountManager() {
   };
 
   const handleEdit = (discount) => {
+    const formatDateTime = (date) => {
+      if (!date) return "";
+      const d = new Date(date);
+      return d.toISOString().slice(0, 16); // Format to YYYY-MM-DDTHH:MM
+    };
+
     setFormData({
       type: discount.type,
       value: discount.value.toString(),
-      start_date: discount.start_date.split("T")[0],
-      end_date: discount.end_date ? discount.end_date.split("T")[0] : "",
+      start_date: formatDateTime(discount.start_date),
+      end_date: formatDateTime(discount.end_date),
       product_id: discount.product?.id ? discount.product.id.toString() : "",
     });
     setEditingId(discount.id);
@@ -152,7 +158,7 @@ function DiscountManager() {
               <FaPlus className="mr-2" /> Add Discount
             </button>
             <button
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/manageproduct")}
               className="bg-blue-500 px-4 py-2 rounded flex items-center"
             >
               <FaTimes className="mr-2" /> Back to Products
@@ -177,7 +183,7 @@ function DiscountManager() {
           <table className="min-w-full table-auto text-base">
             <thead className="bg-gray-700 text-white">
               <tr>
-                {["ID", "Type", "Value", "Start Date", "End Date", "Product", "Actions"].map(
+                {["ID", "Type", "Value", "Start Date & Time", "End Date & Time", "Product", "Actions"].map(
                   (header) => (
                     <th key={header} className="p-3 text-left">
                       {header}
@@ -193,15 +199,15 @@ function DiscountManager() {
                   <td className="p-3">{discount.type}</td>
                   <td className="p-3">
                     {discount.type === "fixed" ? "₱" : ""}
-                    {Number(discount.value).toFixed(2)} {/* Convert to number */}
+                    {Number(discount.value).toFixed(2)}
                     {discount.type === "percentage" ? "%" : ""}
                   </td>
                   <td className="p-3">
-                    {new Date(discount.start_date).toLocaleDateString()}
+                    {new Date(discount.start_date).toLocaleString()}
                   </td>
                   <td className="p-3">
                     {discount.end_date
-                      ? new Date(discount.end_date).toLocaleDateString()
+                      ? new Date(discount.end_date).toLocaleString()
                       : "N/A"}
                   </td>
                   <td className="p-3">{discount.product?.name || "None"}</td>
@@ -285,10 +291,10 @@ function DiscountManager() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Start Date
+                    Start Date & Time
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     name="start_date"
                     value={formData.start_date}
                     onChange={handleChange}
@@ -299,10 +305,10 @@ function DiscountManager() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
-                    End Date (Optional)
+                    End Date & Time (Optional)
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     name="end_date"
                     value={formData.end_date}
                     onChange={handleChange}
