@@ -19,6 +19,7 @@ import ResetPassword from "./components/pages/resetPassword";
 import CompletedOrders from "./components/pages/completedOrders";
 import CancelledOrders from "./components/pages/cancelledOrders";
 import ReadyOrders from "./components/pages/readyOrders";
+import DiscountManager from "./components/pages/discountManager";
 
 function Layout() {
   const location = useLocation();
@@ -102,7 +103,7 @@ function Layout() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="/cancelledorders"
             element={
               <ProtectedRoute>
@@ -110,7 +111,7 @@ function Layout() {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="/readyorders"
             element={
               <ProtectedRoute>
@@ -118,7 +119,15 @@ function Layout() {
               </ProtectedRoute>
             }
           />
-        </Routes>  
+          <Route
+            path="/discounts"
+            element={
+              <ProtectedRoute>
+                <DiscountManager isOpen={isOpen} />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </div>
     </div>
   );
