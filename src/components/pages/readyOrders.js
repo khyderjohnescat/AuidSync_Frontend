@@ -2,6 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../context/axiosInstance";
+import { Link } from "react-router-dom";
+
 
 const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
@@ -167,11 +169,10 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === 1
+                      className={`px-2 py-1 rounded ${currentPage === 1
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                      }`}
+                        }`}
                     >
                       Previous
                     </button>
@@ -181,11 +182,10 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handleNext}
                       disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === totalPages
+                      className={`px-2 py-1 rounded ${currentPage === totalPages
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                      }`}
+                        }`}
                     >
                       Next
                     </button>
@@ -233,120 +233,123 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
 
   return (
     <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
-    <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }} >
-      <h2 className="text-2xl font-bold mb-4 text-white text-center">Ready Orders</h2>
+      <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }} >
+        <h2 className="text-2xl font-bold mb-4 text-white text-center">Ready Orders</h2>
+        <Link to="/ordersKitchen" className="bg-blue-500 px-4 mb-6 py-2 rounded">
+          Back
+        </Link>
 
-      {/* Filter Section */}
-      <div className="mb-4 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
-        <input
-          type="text"
-          name="search"
-          value={filters.search}
-          onChange={handleFilterChange}
-          placeholder="Search by ID, Customer Name, or Staff Name"
-          className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
-        />
-        <select
-          name="order_type"
-          value={filters.order_type}
-          onChange={handleFilterChange}
-          className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
-        >
-          <option value="">All Order Types</option>
-          <option value="dine-in">Dine-In</option>
-          <option value="takeout">Takeout</option>
-        </select>
-        <input
-          type="date"
-          name="date"
-          value={filters.date}
-          onChange={handleFilterChange}
-          className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
-        />
-        <select
-          name="payment_method"
-          value={filters.payment_method}
-          onChange={handleFilterChange}
-          className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
-        >
-          <option value="">All Payment Methods</option>
-          <option value="cash">Cash</option>
-          <option value="card">Card</option>
-        </select>
-        <button
-          onClick={handleClearFilters}
-          className="bg-red-500 text-white text-sm py-2 px-4 rounded hover:bg-red-400"
-        >
-          Clear Filters
-        </button>
-      </div>
+        {/* Filter Section */}
+        <div className="mt-5 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
+          <input
+            type="text"
+            name="search"
+            value={filters.search}
+            onChange={handleFilterChange}
+            placeholder="Search by ID, Customer Name, or Staff Name"
+            className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
+          />
+          <select
+            name="order_type"
+            value={filters.order_type}
+            onChange={handleFilterChange}
+            className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
+          >
+            <option value="">All Order Types</option>
+            <option value="dine-in">Dine-In</option>
+            <option value="takeout">Takeout</option>
+          </select>
+          <input
+            type="date"
+            name="date"
+            value={filters.date}
+            onChange={handleFilterChange}
+            className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
+          />
+          <select
+            name="payment_method"
+            value={filters.payment_method}
+            onChange={handleFilterChange}
+            className="border border-gray-600 bg-gray-700 text-white rounded-md px-3 py-2 text-sm flex-1 min-w-[150px]"
+          >
+            <option value="">All Payment Methods</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+          </select>
+          <button
+            onClick={handleClearFilters}
+            className="bg-red-500 text-white text-sm py-2 px-4 rounded hover:bg-red-400"
+          >
+            Clear Filters
+          </button>
+        </div>
 
-      {/* Table Section */}
-      {error && <div className="text-center text-red-500">{error}</div>}
-      <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
-        <table className="min-w-full table-auto text-base">
-          <thead className="bg-gray-700 text-white">
-            <tr>
-              {[
-                "ID",
-                "Order Type",
-                "Customer",
-                "Staff",
-                "Discount Type",
-                "Value",
-                "Amount",
-                "Final Price",
-                "Payment",
-                "Paid",
-                "Change",
-                "Status",
-                "Created At",
-                "",
-              ].map((header) => (
-                <th key={header} className="p-3 text-left">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-gray-700">
-                <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.order_type}</td>
-                <td className="p-3">{order.customer_name || "N/A"}</td>
-                <td className="p-3">{order.staff_name || "N/A"}</td>
-                <td className="p-3">{order.discount_type || "None"}</td>
-                <td className="p-3">₱{order.discount_value || "0.00"}</td>
-                <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-                <td className="p-3">₱{order.final_price}</td>
-                <td className="p-3">{order.payment_method}</td>
-                <td className="p-3">₱{order.amount_paid}</td>
-                <td className="p-3">₱{order.change}</td>
-                <td className="p-3">{order.status}</td>
-                <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-                <td className="p-3">
-                  <button
-                    onClick={() => handleViewOrderDetails(order.id)}
-                    className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-                  >
-                    View
-                  </button>
-                </td>
+        {/* Table Section */}
+        {error && <div className="text-center text-red-500">{error}</div>}
+        <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-5">
+          <table className="min-w-full table-auto text-base">
+            <thead className="bg-gray-700 text-white">
+              <tr>
+                {[
+                  "ID",
+                  "Order Type",
+                  "Customer",
+                  "Staff",
+                  "Discount Type",
+                  "Value",
+                  "Amount",
+                  "Final Price",
+                  "Payment",
+                  "Paid",
+                  "Change",
+                  "Status",
+                  "Created At",
+                  "",
+                ].map((header) => (
+                  <th key={header} className="p-3 text-left">
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id} className="hover:bg-gray-700">
+                  <td className="p-3">{order.id}</td>
+                  <td className="p-3">{order.order_type}</td>
+                  <td className="p-3">{order.customer_name || "N/A"}</td>
+                  <td className="p-3">{order.staff_name || "N/A"}</td>
+                  <td className="p-3">{order.discount_type || "None"}</td>
+                  <td className="p-3">₱{order.discount_value || "0.00"}</td>
+                  <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+                  <td className="p-3">₱{order.final_price}</td>
+                  <td className="p-3">{order.payment_method}</td>
+                  <td className="p-3">₱{order.amount_paid}</td>
+                  <td className="p-3">₱{order.change}</td>
+                  <td className="p-3">{order.status}</td>
+                  <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleViewOrderDetails(order.id)}
+                      className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Modal for Order Details */}
-      {selectedOrder && (
-        <OrderModal
-          selectedOrder={selectedOrder}
-          handleCloseModal={handleCloseModal}
-        />
-      )}
-    </div>
+        {/* Modal for Order Details */}
+        {selectedOrder && (
+          <OrderModal
+            selectedOrder={selectedOrder}
+            handleCloseModal={handleCloseModal}
+          />
+        )}
+      </div>
     </div>
   );
 };

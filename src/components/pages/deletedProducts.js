@@ -66,7 +66,7 @@ function DeletedProducts() {
         </Link>
 
       {/* Search */}
-      <div className="flex items-center bg-gray-800 p-2 rounded mt-4">
+      <div className="flex items-center bg-gray-800 p-2 rounded mt-5">
         <FaSearch className="text-gray-400 mx-2" />
         <input
           type="text"

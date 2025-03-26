@@ -110,7 +110,7 @@ const Dashboard = () => {
                 <div className="mb-4  flex justify-end">
                     <label className="mr-2 mt-2 font-semibold text-white">Filter:</label>
                     <select
-                        className="p-2 border rounded"
+                        className="p-2 border rounded text-black"
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                     >

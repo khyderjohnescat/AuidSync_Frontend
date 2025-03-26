@@ -3,6 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaSearch, FaPlus, FaTimes, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { Plus, Trash2 } from "lucide-react";
+
 
 function ProductManager() {
   const navigate = useNavigate();
@@ -189,203 +191,203 @@ function ProductManager() {
 
   return (
     <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
-    <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-screen">
-      <h2 className="text-2xl font-bold mb-4 text-White text-center">Product Management</h2>
+      <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-screen">
+        <h2 className="text-2xl font-bold mb-4 text-White text-center">Product Management</h2>
 
-      {/* Button Group */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-        <div className="flex gap-2">
-          <button
-            onClick={openModal}
-            className="bg-green-500 px-4 py-2 rounded flex items-center"
-          >
-            <FaPlus className="mr-2" /> Add Product
-          </button>
-          <button
-            onClick={() => navigate("/products/deleted")}
-            className="bg-red-500 px-4 py-2 rounded flex items-center"
-          >
-            <FaTrash className="mr-2" /> Archived Products
-          </button>
-        </div>
-      </div>
-
-{/* Search Bar & Category Filter */}
-<div className="flex justify-between items-center bg-gray-800 p-2 rounded mb-4">
-  {/* Search Input */}
-  <div className="flex items-center bg-gray-700 p-2 rounded w-2/3">
-    <FaSearch className="text-gray-400 mx-2" />
-    <input
-      type="text"
-      placeholder="Search products..."
-      className="bg-transparent outline-none text-white w-full px-2"
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-    />
-  </div>
-
-  {/* Category Filter */}
-  <select
-    className="bg-gray-700 p-2 rounded text-white w-1/3 ml-2"
-    value={selectedCategory}
-    onChange={(e) => setSelectedCategory(e.target.value)}
-  >
-    <option value="All">All</option>
-    {categories.map((cat) => (
-      <option key={cat.id} value={cat.id.toString()}>
-        {cat.name}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 rounded-lg">
-        {filteredProducts.map((product) => {
-          const imageUrl =
-            product.image && product.image.startsWith("http")
-              ? product.image
-              : product.image?.includes("uploads/")
-                ? `http://localhost:5050/${product.image}`
-                : `http://localhost:5050/uploads/${product.image}`;
-
-          const categoryName =
-            categories.find((cat) => cat.id === product.category_id)?.name ||
-            "Unknown";
-
-          return (
-            <div
-              key={product.id}
-              className="bg-gray-800 p-4 rounded-lg shadow-md"
+        {/* Button Group */}
+        <div className="flex flex-col sm:flex-row sm:items-center mb-4 gap-3">
+          <div className="flex gap-3 justify-start"> {/* Ensures left alignment */}
+            <button
+              onClick={openModal}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-sm px-5 py-2.5 rounded-lg shadow-md transition-all duration-200"
             >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-40 object-cover rounded-md mb-3"
-              />
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-400">{categoryName}</p>
-              <p className="text-green-400 font-bold">₱{product.price}</p>
-              <p className="text-gray-300">Stock: {product.quantity} pcs</p>
-              <div className="mt-4 flex justify-between">
-                <button
-                  className="bg-blue-500 px-3 py-1 rounded"
-                  onClick={() => handleEdit(product)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 px-3 py-1 rounded"
-                  onClick={() => handleDelete(product.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Product Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">
-                {editingId ? "Edit Product" : "Add New Product"}
-              </h3>
-              <FaTimes
-                className="cursor-pointer text-gray-400 hover:text-white"
-                onClick={closeModal}
-              />
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              {/* Name */}
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Name"
-                required
-                className="p-2 rounded bg-gray-700 w-full text-white"
-              />
-
-              {/* Category */}
-              <select
-                name="category_id"
-                value={formData.category_id}
-                onChange={handleChange}
-                required
-                className="p-2 rounded bg-gray-700 w-full text-white"
-              >
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* Price */}
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="Price"
-                required
-                className="p-2 rounded bg-gray-700 w-full text-white"
-              />
-
-              {/* Quantity */}
-              <input
-                type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                placeholder="Quantity"
-                required
-                className="p-2 rounded bg-gray-700 w-full text-white"
-              />
-
-              {/* Preview Image */}
-              {previewImage && (
-                <img
-                  src={previewImage}
-                  alt={formData.name || "Product Image"}
-                  className="w-full h-40 object-cover rounded-md mb-3"
-                  onError={(e) => {
-                    console.error("Error loading image:", previewImage);
-                    e.target.onerror = null;
-                    e.target.src = "https://placehold.co/150"; // Fallback image
-                  }}
-                />
-              )}
-
-              {/* Upload New Image */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="p-2 rounded bg-gray-700 w-full text-white"
-              />
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="mt-4 bg-green-500 hover:bg-green-600 px-4 py-2 rounded w-full text-white"
-              >
-                {editingId ? "Update Product" : "Add Product"}
-              </button>
-            </form>
+              <Plus size={18} /> Add Product
+            </button>
+            <button
+              onClick={() => navigate("/products/deleted")}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-sm px-5 py-2.5 rounded-lg shadow-md transition-all duration-200"
+            >
+              <Trash2 size={18} /> Archived Products
+            </button>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Search Bar & Category Filter */}
+        <div className="flex justify-between items-center bg-gray-800 p-2 rounded mb-4">
+          {/* Search Input */}
+          <div className="flex items-center bg-gray-700 p-2 rounded w-2/3">
+            <FaSearch className="text-gray-400 mx-2" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="bg-transparent outline-none text-white w-full px-2"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Category Filter */}
+          <select
+            className="bg-gray-700 p-2 rounded text-white w-1/3 ml-2"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="All">All</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id.toString()}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 rounded-lg">
+          {filteredProducts.map((product) => {
+            const imageUrl =
+              product.image && product.image.startsWith("http")
+                ? product.image
+                : product.image?.includes("uploads/")
+                  ? `http://localhost:5050/${product.image}`
+                  : `http://localhost:5050/uploads/${product.image}`;
+
+            const categoryName =
+              categories.find((cat) => cat.id === product.category_id)?.name ||
+              "Unknown";
+
+            return (
+              <div
+                key={product.id}
+                className="bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-40 object-cover rounded-md mb-3"
+                />
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-400">{categoryName}</p>
+                <p className="text-green-400 font-bold">₱{product.price}</p>
+                <p className="text-gray-300">Stock: {product.quantity} pcs</p>
+                <div className="mt-4 flex justify-between">
+                  <button
+                    className="bg-blue-500 px-3 py-1 rounded"
+                    onClick={() => handleEdit(product)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="bg-red-500 px-3 py-1 rounded"
+                    onClick={() => handleDelete(product.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Product Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">
+                  {editingId ? "Edit Product" : "Add New Product"}
+                </h3>
+                <FaTimes
+                  className="cursor-pointer text-gray-400 hover:text-white"
+                  onClick={closeModal}
+                />
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Name */}
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Name"
+                  required
+                  className="p-2 rounded bg-gray-700 w-full text-white"
+                />
+
+                {/* Category */}
+                <select
+                  name="category_id"
+                  value={formData.category_id}
+                  onChange={handleChange}
+                  required
+                  className="p-2 rounded bg-gray-700 w-full text-white"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Price */}
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="Price"
+                  required
+                  className="p-2 rounded bg-gray-700 w-full text-white"
+                />
+
+                {/* Quantity */}
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  placeholder="Quantity"
+                  required
+                  className="p-2 rounded bg-gray-700 w-full text-white"
+                />
+
+                {/* Preview Image */}
+                {previewImage && (
+                  <img
+                    src={previewImage}
+                    alt={formData.name || "Product Image"}
+                    className="w-full h-40 object-cover rounded-md mb-3"
+                    onError={(e) => {
+                      console.error("Error loading image:", previewImage);
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/150"; // Fallback image
+                    }}
+                  />
+                )}
+
+                {/* Upload New Image */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="p-2 rounded bg-gray-700 w-full text-white"
+                />
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="mt-4 bg-green-500 hover:bg-green-600 px-4 py-2 rounded w-full text-white"
+                >
+                  {editingId ? "Update Product" : "Add Product"}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
