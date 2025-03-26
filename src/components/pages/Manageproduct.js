@@ -195,8 +195,8 @@ function ProductManager() {
         <h2 className="text-2xl font-bold mb-4 text-White text-center">Product Management</h2>
 
         {/* Button Group */}
-        <div className="flex flex-col sm:flex-row sm:items-center mb-4 gap-3">
-          <div className="flex gap-3 justify-start"> {/* Ensures left alignment */}
+        <div className="flex flex-row items-end gap-4 mb-4 justify-end">
+          <div className="flex gap-3 justify-start">
             <button
               onClick={openModal}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-sm px-5 py-2.5 rounded-lg shadow-md transition-all duration-200"

@@ -213,8 +213,8 @@ const OrderList = ({ isOpen }) => {
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
                       className={`px-2 py-1 rounded ${currentPage === 1
-                          ? "bg-gray-600 cursor-not-allowed"
-                          : "bg-blue-500 hover:bg-blue-400"
+                        ? "bg-gray-600 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-400"
                         }`}
                     >
                       Previous
@@ -226,8 +226,8 @@ const OrderList = ({ isOpen }) => {
                       onClick={handleNext}
                       disabled={currentPage === totalPages}
                       className={`px-2 py-1 rounded ${currentPage === totalPages
-                          ? "bg-gray-600 cursor-not-allowed"
-                          : "bg-blue-500 hover:bg-blue-400"
+                        ? "bg-gray-600 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-400"
                         }`}
                     >
                       Next
@@ -332,8 +332,8 @@ const OrderList = ({ isOpen }) => {
               onClick={() => handleStatusChange(order.id, "completed")}
               disabled={order.status !== "ready"}
               className={`p-4 rounded-lg text-center ${order.status !== "ready"
-                  ? "bg-gray-600 cursor-not-allowed text-gray-400"
-                  : "bg-green-500 hover:bg-green-400 text-white"
+                ? "bg-gray-600 cursor-not-allowed text-gray-400"
+                : "bg-green-500 hover:bg-green-400 text-white"
                 }`}
             >
               <span className="font-semibold">Mark as Completed</span>
@@ -343,8 +343,8 @@ const OrderList = ({ isOpen }) => {
                 onClick={() => handleStatusChange(order.id, "cancelled")}
                 disabled={order.status === "processing"}
                 className={`p-4 rounded-lg text-center ${order.status === "processing"
-                    ? "bg-gray-600 cursor-not-allowed text-gray-400"
-                    : "bg-red-500 hover:bg-red-400 text-white"
+                  ? "bg-gray-600 cursor-not-allowed text-gray-400"
+                  : "bg-red-500 hover:bg-red-400 text-white"
                   }`}
               >
                 <span className="font-semibold">Cancel Order</span>
@@ -367,21 +367,19 @@ const OrderList = ({ isOpen }) => {
       <div className={`bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300`} style={{ paddingLeft: isOpen ? "30px" : "30px" }}>
         <h2 className="text-2xl font-bold text-white text-center">Order List</h2>
 
-        <div className="mb-5">
-          <div className="flex flex-row items-end gap-4">
-            <Link
-              to="/completedorders"
-              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              <CheckCircle size={18} /> Completed Orders
-            </Link>
-            <Link
-              to="/cancelledorders"
-              className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              <XCircle size={18} /> Cancelled Orders
-            </Link>
-          </div>
+        <div className="flex flex-row items-end gap-4 mb-4 justify-end">
+          <Link
+            to="/completedorders"
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <CheckCircle size={18} /> Completed Orders
+          </Link>
+          <Link
+            to="/cancelledorders"
+            className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <XCircle size={18} /> Cancelled Orders
+          </Link>
         </div>
 
         {/* Notification */}
