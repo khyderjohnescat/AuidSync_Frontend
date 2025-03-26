@@ -64,10 +64,10 @@ const NavItem = ({ to, icon, text, isOpen, location }) => {
 // Logout Modal Component
 const LogoutModal = ({ onConfirm, onCancel }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
-        <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
-        <p className="text-gray-700 mb-6">Are you sure you want to log out?</p>
+    <div className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 text-center">
+        <h2 className="text-lg text-white font-semibold mb-4">Confirm Logout</h2>
+        <p className="text-gray-300 mb-6">Are you sure you want to log out?</p>
         <div className="flex justify-center gap-4">
           <button onClick={onConfirm} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
             Yes, Logout
