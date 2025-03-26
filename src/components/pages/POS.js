@@ -225,9 +225,9 @@ const POS = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 bg-gray-800 gap-2 h-[500px] p-2 bg-gray-950 text-white">
+    <div className="grid grid-cols-3 bg-gray-800 gap-2 flex flex-col h-screen p-2 bg-gray-950 text-white">
       {/* Product List */}
-      <div className="col-span-2 flex flex-col bg-gray-900 p-5 rounded-lg shadow-lg h-auto">
+      <div className="col-span-2 flex flex-col min-h-full bg-gray-900 p-5 rounded-lg shadow-lg h-auto">
         <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
         <div className="flex gap-4 mb-4">

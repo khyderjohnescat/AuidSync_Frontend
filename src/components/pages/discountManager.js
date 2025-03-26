@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash, FaBackward, FaBackspace } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance"; // Adjust path
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowLeftCircle, ArrowLeftFromLine, ArrowLeftSquare, ArrowRightCircleIcon, SendToBackIcon, SkipBackIcon } from "lucide-react";
 
 function DiscountManager() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ function DiscountManager() {
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
+
 
   // Fetch Discounts
   const fetchDiscounts = useCallback(async () => {
@@ -144,24 +146,24 @@ function DiscountManager() {
   });
 
   return (
-    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
-      <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-screen">
+    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
+      <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-full">
         <h2 className="text-2xl font-bold mb-4 text-white text-center">Discount Management</h2>
 
         {/* Button Group */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-          <div className="flex gap-2">
+          <div className="flex w-full justify-between">
+            <button
+              onClick={() => navigate("/manageproduct")}
+              className="bg-blue-500 px-4 py-2 rounded flex items-center"
+            >
+              <ArrowLeftCircle className="mr-2" /> Back
+            </button>
             <button
               onClick={openModal}
               className="bg-green-500 px-4 py-2 rounded flex items-center"
             >
               <FaPlus className="mr-2" /> Add Discount
-            </button>
-            <button
-              onClick={() => navigate("/manageproduct")}
-              className="bg-blue-500 px-4 py-2 rounded flex items-center"
-            >
-              <FaTimes className="mr-2" /> Back to Products
             </button>
           </div>
         </div>

@@ -2,7 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../context/axiosInstance";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
 
 
 const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
@@ -10,6 +11,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
     search: "",
@@ -125,6 +127,8 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
       if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
+    
+
     return (
       <div
         className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
@@ -232,12 +236,15 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   };
 
   return (
-    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white">
-      <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '3-px' : '30px' }}>
+    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
+      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '3-px' : '30px' }}>
         <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Orders</h2>
-        <Link to="/orderlist" className="bg-blue-500 px-4 mb-6 py-2 rounded">
-          Back
-        </Link>
+        <button
+          onClick={() => navigate("/orderlist")}
+          className="bg-blue-500 px-4 py-2 rounded flex items-center"
+        >
+          <ArrowLeftCircle className="mr-2" /> Back
+        </button>
 
         {/* Filter Section */}
         <div className="mt-5 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">

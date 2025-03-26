@@ -352,16 +352,16 @@ const OrderList = ({ isOpen }) => {
   };
 
   return (
-    <div className="bg-gray-800 gap-2 h-[500px] p-2 text-white ">
-      <div className="bg-gray-900 min-h-screen rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? "30px" : "30px" }}>
-        <div className="mb-6">
-          <h2 className=" text-2xl font-bold text-white text-center">Kitchen Order List</h2>
+    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
+      <div className="bg-gray-900 rounded-lg p-4 text-gray-200 transition-all duration-300 h-auto min-h-full" style={{ paddingLeft: isOpen ? "30px" : "30px" }}>
+        <div className="mb-5">
+          <h2 className=" text-2xl font-bold text-white text-center mb-4">Kitchen Order List</h2>
           <div className="flex flex-row gap-4 justify-end"> {/* Ensures left alignment */}
             <Link
               to="/readyorders"
               className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
             >
-              <CheckCircle size={18} /> Ready Orders
+              <CheckCircle size={18} /> Completed Orders
             </Link>
           </div>
         </div>
@@ -423,9 +423,9 @@ const OrderList = ({ isOpen }) => {
 
         {/* Table Section */}
         {error && <div className="text-center text-red-500">{error}</div>}
-        <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
-          <table className="min-w-full table-auto text-base">
-            <thead className="bg-gray-700 text-white">
+        <div className="bg-gray-800 shadow-md rounded-md w-full overflow-hidden">
+        <table className="w-full table-fixed text-base">
+        <thead className="bg-gray-700 text-white">
               <tr>
                 {[
                   "ID",
