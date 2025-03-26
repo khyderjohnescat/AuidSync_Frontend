@@ -254,7 +254,6 @@ const POS = () => {
             ))}
           </select>
         </div>
-
         {/* Scrollable container */}
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
