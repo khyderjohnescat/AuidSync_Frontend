@@ -21,6 +21,8 @@ import CompletedOrders from "./components/pages/completedOrders";
 import CancelledOrders from "./components/pages/cancelledOrders";
 import ReadyOrders from "./components/pages/readyOrders";
 import DiscountManager from "./components/pages/discountManager";
+import AccountSecurity from "./components/pages/AccountSecurity";
+import AccountProfile from "./components/pages/AccountProfile";
 
 function Layout() {
   const location = useLocation();
@@ -135,7 +137,26 @@ function Layout() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/account-profile"
+            element={
+              <ProtectedRoute>
+                <AccountProfile isOpen={isOpen} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account-security"
+            element={
+              <ProtectedRoute>
+                <AccountSecurity isOpen={isOpen} />
+              </ProtectedRoute>
+            }
+          />
+          
         </Routes>
+
+        
       </div>
     </div>
   );
