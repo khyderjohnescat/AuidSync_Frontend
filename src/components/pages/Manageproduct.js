@@ -245,7 +245,7 @@ function ProductManager() {
           </div>
 
           {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto p-2 flex-col h-screen" style={{ maxHeight: "70vh" }}>
+          <div className="flex-1 overflow-y-auto p-2 flex-col h-screen" style={{ maxHeight: "67vh" }}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 min-h-full rounded-lg ">
               {filteredProducts.map((product) => {
                 const imageUrl = getImageUrl(product.image);

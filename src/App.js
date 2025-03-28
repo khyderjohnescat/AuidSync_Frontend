@@ -8,6 +8,7 @@ import {
 import Login from "./components/pages/Login";
 import Dashboard from "./components/pages/Dashboard";
 import POS from "./components/pages/POS";
+import Settings from "./components/pages/Settings";
 import Orderlist from "./components/pages/Orderlist";
 import OrdersKitchen from "./components/pages/ordersKitchen";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -36,9 +37,8 @@ function Layout() {
       {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />}
 
       <div
-        className={`flex-grow transition-all duration-300 ${
-          !hideSidebar ? (isOpen ? "pl-60" : "pl-16") : ""
-        }`}
+        className={`flex-grow transition-all duration-300 ${!hideSidebar ? (isOpen ? "pl-60" : "pl-16") : ""
+          }`}
       >
         <Routes>
           {/* Public Routes */}
@@ -124,6 +124,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <DiscountManager isOpen={isOpen} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings isOpen={isOpen} />
               </ProtectedRoute>
             }
           />

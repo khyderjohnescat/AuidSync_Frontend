@@ -162,7 +162,7 @@ const OrderList = ({ isOpen }) => {
 
     return (
       <div
-        className="fixed inset-0 bg-black bg-opacity-100 flex justify-center items-center z-50 p-4"
+        className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50 p-4"
         onClick={handleCloseModal}
       >
         <div
