@@ -9,6 +9,8 @@ const SettingsProfile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [currentAvatar, setCurrentAvatar] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Loading state for update profile
+  const [isUploading, setIsUploading] = useState(false); // Loading state for image upload
 
   const API_BASE_URL = "http://localhost:5050";
   const PLACEHOLDER_IMAGE = "https://placehold.co/150";
@@ -42,19 +44,40 @@ const SettingsProfile = () => {
   };
 
   const updateProfile = async () => {
-    const { first_name, last_name, role } = user;
+    const { first_name, last_name } = user;
     const name = `${first_name} ${last_name}`.trim();
+
+    // Basic validation: ensure first name is not empty
+    if (!first_name.trim()) {
+      toast.warn("First name is required.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await axiosInstance.put("/auth/update/name", { name, role }); 
-      toast.success("Profile updated successfully", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      const response = await axiosInstance.put("/auth/update/name", { name });
+      if (response.data.message === "No changes made to name") {
+        toast.info("No changes made to your profile.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.success("Profile updated successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     } catch (error) {
-      toast.error("Failed to update profile. Please try again.", {
+      const errorMessage = error.response?.data?.message || "Failed to update profile. Please try again.";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,6 +90,7 @@ const SettingsProfile = () => {
       return;
     }
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append("image", profileImage);
     try {
@@ -82,10 +106,13 @@ const SettingsProfile = () => {
       setImagePreview(null);
       setCurrentAvatar(`${API_BASE_URL}${response.data.avatar}`);
     } catch (error) {
-      toast.error("Failed to upload profile image. Please try again.", {
+      const errorMessage = error.response?.data?.message || "Failed to upload profile image. Please try again.";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -94,7 +121,6 @@ const SettingsProfile = () => {
       <div className="w-full h-100 max-w-4xl bg-gray-900 rounded-lg shadow-lg p-4">
         <h1 className="text-2xl font-bold text-white mb-4 text-center">Account Settings</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* First Column: Profile Picture */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Information Settings</h2>
             <Link
@@ -111,7 +137,6 @@ const SettingsProfile = () => {
             </Link>
           </div>
 
-          {/* Profile Picture Update */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Profile Picture</h2>
             <div className="space-y-3">
@@ -150,15 +175,16 @@ const SettingsProfile = () => {
               )}
               <button
                 onClick={uploadProfileImage}
-                disabled={!profileImage}
-                className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md disabled:bg-gray-600 disabled:cursor-not-allowed text-sm"
+                disabled={!profileImage || isUploading}
+                className={`w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md disabled:bg-gray-600 disabled:cursor-not-allowed text-sm ${
+                  isUploading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Upload Image
+                {isUploading ? "Uploading..." : "Upload Image"}
               </button>
             </div>
           </div>
 
-          {/* Profile Information (First Name, Last Name, Role) */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Profile Information</h2>
             <div className="space-y-3">
@@ -196,9 +222,12 @@ const SettingsProfile = () => {
               </div>
               <button
                 onClick={updateProfile}
-                className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm"
+                disabled={isLoading}
+                className={`w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Update Profile
+                {isLoading ? "Updating..." : "Update Profile"}
               </button>
             </div>
           </div>

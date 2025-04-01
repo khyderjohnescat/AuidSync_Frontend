@@ -1,21 +1,21 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../context/axiosInstance";
-import { ToastContainer, toast } from "react-toastify"; 
-import "react-toastify/dist/ReactToastify.css"; 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
 
-
 const SettingsEmail = () => {
-  const [user, setUser] = useState({ email: ""});
+  const [user, setUser] = useState({ email: "" });
   const [passwords, setPasswords] = useState({ current: "", new: "", confirmNew: "" });
-  const [passwordError, setPasswordError] = useState(""); 
+  const [passwordError, setPasswordError] = useState("");
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false); 
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
 
   useEffect(() => {
     axiosInstance.get("/auth/profile").then((response) => {
-      const { email } = response.data; 
- 
-  
-      setUser({ email}); 
+      const { email } = response.data;
+      setUser({ email });
     });
   }, []);
 
@@ -25,22 +25,44 @@ const SettingsEmail = () => {
 
   const handlePasswordChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
-    setPasswordError(""); 
+    setPasswordError("");
   };
 
   const updateProfile = async () => {
     const { email } = user;
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.warn("Please enter a valid email address.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    setIsLoadingEmail(true);
     try {
-      await axiosInstance.put("/auth/update/email", { email });
-      toast.success("Email changed successfully", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      const response = await axiosInstance.put("/auth/update/email", { email });
+      if (response.data.message === "No changes made to email") {
+        toast.info("No changes made to your email.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } else {
+        toast.success("Email changed successfully", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     } catch (error) {
-      toast.error("Failed to update email. Please try again.", {
+      const errorMessage = error.response?.data?.message || "Failed to update email. Please try again.";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsLoadingEmail(false);
     }
   };
 
@@ -55,8 +77,35 @@ const SettingsEmail = () => {
       return;
     }
 
+    // Validate new password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(passwords.new)) {
+      setPasswordError(
+        "New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)"
+      );
+      toast.warn(
+        "New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)",
+        {
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
+      return;
+    }
+
+    // Check if current and new password are the same
+    if (passwords.current === passwords.new) {
+      setPasswordError("New password must be different from the current password.");
+      toast.warn("New password must be different from the current password.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    setIsLoadingPassword(true);
     try {
-      await axiosInstance.put("/auth/change-password", {
+      const response = await axiosInstance.put("/auth/change-password", {
         current: passwords.current,
         new: passwords.new,
       });
@@ -65,37 +114,38 @@ const SettingsEmail = () => {
         autoClose: 3000,
       });
       setPasswords({ current: "", new: "", confirmNew: "" });
-      setPasswordError(""); 
+      setPasswordError("");
     } catch (error) {
-      toast.error("Failed to change password. Please try again.", {
+      const errorMessage = error.response?.data?.message || "Failed to change password. Please try again.";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
       });
+    } finally {
+      setIsLoadingPassword(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gray-800 flex items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
       <div className="w-full h-100 max-w-4xl bg-gray-900 rounded-lg shadow-lg p-4">
         <h1 className="text-2xl font-bold text-white mb-4 text-center">Account Settings</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold text-white mb-3">Information Settings</h2>
-          <Link
-            to="/account-profile"
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            Account Profile
-          </Link>
-          <Link
-            to="/account-security"
-            className="flex items-center my-5 gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            Account Security
-          </Link>
+          <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
+            <h2 className="text-lg font-semibold text-white mb-3">Information Settings</h2>
+            <Link
+              to="/account-profile"
+              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              Account Profile
+            </Link>
+            <Link
+              to="/account-security"
+              className="flex items-center my-5 gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              Account Security
+            </Link>
           </div>
-          {/* Second Column: Profile Information (with Role) */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Change Email</h2>
             <div className="space-y-3">
@@ -114,14 +164,15 @@ const SettingsEmail = () => {
               </div>
               <button
                 onClick={updateProfile}
-                className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm"
+                disabled={isLoadingEmail}
+                className={`w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm ${
+                  isLoadingEmail ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Update Email
+                {isLoadingEmail ? "Updating..." : "Update Email"}
               </button>
             </div>
           </div>
-
-          {/* Third Column: Change Password (with Confirm New Password) */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Change Password</h2>
             <div className="space-y-3">
@@ -172,15 +223,17 @@ const SettingsEmail = () => {
               )}
               <button
                 onClick={changePassword}
-                className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm"
+                disabled={isLoadingPassword}
+                className={`w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition duration-200 shadow-md text-sm ${
+                  isLoadingPassword ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Change Password
+                {isLoadingPassword ? "Changing..." : "Change Password"}
               </button>
             </div>
           </div>
         </div>
       </div>
-      {/* Add ToastContainer to render notifications */}
       <ToastContainer />
     </div>
   );
