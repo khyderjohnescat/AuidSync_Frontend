@@ -28,18 +28,16 @@ const SettingsEmail = () => {
     setPasswordError(""); 
   };
 
- 
-
   const updateProfile = async () => {
     const { email } = user;
     try {
       await axiosInstance.put("/auth/update", { email });
-      toast.success("Profile updated successfully", {
+      toast.success("Email changed successfully", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
-      toast.error("Failed to update profile. Please try again.", {
+      toast.error("Failed to update email. Please try again.", {
         position: "top-right",
         autoClose: 3000,
       });

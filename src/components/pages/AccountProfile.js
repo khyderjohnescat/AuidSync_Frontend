@@ -4,7 +4,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
 
-
 const SettingsProfile = () => {
   const [user, setUser] = useState({ first_name: "", last_name: "", role: "" });
   const [profileImage, setProfileImage] = useState(null);
@@ -43,10 +42,10 @@ const SettingsProfile = () => {
   };
 
   const updateProfile = async () => {
-    const { first_name, last_name } = user;
+    const { first_name, last_name, role } = user;
     const name = `${first_name} ${last_name}`.trim();
     try {
-      await axiosInstance.put("/auth/update", { name });
+      await axiosInstance.put("/auth/update", { name, role }); // Sending both name and role to the backend
       toast.success("Profile updated successfully", {
         position: "top-right",
         autoClose: 3000,
@@ -111,6 +110,8 @@ const SettingsProfile = () => {
               Account Security
             </Link>
           </div>
+
+          {/* Profile Picture Update */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Profile Picture</h2>
             <div className="space-y-3">
@@ -135,12 +136,12 @@ const SettingsProfile = () => {
                   className="w-full text-gray-400 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500"
                 />
               </div>
-              {imagePreview && ( // Only show the Preview section if imagePreview is not null
+              {imagePreview && (
                 <div className="mt-3">
                   <p className="text-sm font-medium text-gray-400 mb-1">Preview:</p>
                   <div className="flex justify-center">
                     <img
-                      src={imagePreview} // Only show the new image preview
+                      src={imagePreview}
                       alt="Profile Preview"
                       className="w-24 h-24 object-cover rounded-full border border-gray-600"
                     />
@@ -157,7 +158,7 @@ const SettingsProfile = () => {
             </div>
           </div>
 
-          {/* Second Column: Profile Information (with Role) */}
+          {/* Profile Information (First Name, Last Name, Role) */}
           <div className="p-4 h-100 bg-gray-800 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold text-white mb-3">Profile Information</h2>
             <div className="space-y-3">
@@ -189,12 +190,9 @@ const SettingsProfile = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Role</label>
-
-                <span class="flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                <span className="flex items-center gap-1 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                   👤 {user.role}
                 </span>
-
-
               </div>
               <button
                 onClick={updateProfile}
@@ -206,7 +204,6 @@ const SettingsProfile = () => {
           </div>
         </div>
       </div>
-      {/* Add ToastContainer to render notifications */}
       <ToastContainer />
     </div>
   );
