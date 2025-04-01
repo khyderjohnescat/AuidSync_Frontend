@@ -45,7 +45,7 @@ const SettingsProfile = () => {
     const { first_name, last_name, role } = user;
     const name = `${first_name} ${last_name}`.trim();
     try {
-      await axiosInstance.put("/auth/update", { name, role }); // Sending both name and role to the backend
+      await axiosInstance.put("/auth/update/name", { name, role }); 
       toast.success("Profile updated successfully", {
         position: "top-right",
         autoClose: 3000,

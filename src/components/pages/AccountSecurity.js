@@ -31,7 +31,7 @@ const SettingsEmail = () => {
   const updateProfile = async () => {
     const { email } = user;
     try {
-      await axiosInstance.put("/auth/update", { email });
+      await axiosInstance.put("/auth/update/email", { email });
       toast.success("Email changed successfully", {
         position: "top-right",
         autoClose: 3000,
