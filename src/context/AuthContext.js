@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useEffect, useState } from "react";
+import axiosInstance from "../context/axiosInstance";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
-        // Retrieve user from localStorage on initial render
         const savedUser = localStorage.getItem("user");
         return savedUser ? JSON.parse(savedUser) : null;
     });
@@ -14,59 +15,50 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await fetch("http://localhost:5050/api/auth/me", {
-                    method: "GET",
-                    credentials: "include",
-                });
-    
-                if (!response.ok) throw new Error("Not authenticated");
-    
-                const data = await response.json();
-                setUser(data.user);
-                localStorage.setItem("user", JSON.stringify(data.user)); // Store user data
+                const response = await axiosInstance.get("/auth/me");
+                setUser(response.data.user);
+                localStorage.setItem("user", JSON.stringify(response.data.user));
             } catch (error) {
+                console.error("Authentication error:", error.message);
                 setUser(null);
                 localStorage.removeItem("user");
             } finally {
                 setLoading(false);
             }
         };
-    
-        if (!user) {  // Only fetch if user is not already set
-            checkAuth();
-        } else {
-            setLoading(false);
-        }
-    }, [user]); // ✅ Add user to the dependency array
+
+        if (!user) checkAuth();
+        else setLoading(false);
+    }, [user]);
 
     const login = async (email, password) => {
-        const response = await fetch("http://localhost:5050/api/auth/login", { 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-            credentials: "include",
-        });
-    
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Login failed");
-    
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        try {
+            const response = await axiosInstance.post("/auth/login", { email, password });
+            setUser(response.data.user);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+        } catch (error) {
+            throw new Error(error.response?.data?.message || "Login failed");
+        }
     };
-    
 
     const logout = async () => {
-        await fetch("http://localhost:5050/api/auth/logout", {
-            method: "POST",
-            credentials: "include",
-        });
-
-        setUser(null);
-        localStorage.removeItem("user");
+        try {
+            // Call logout on the server
+            await axiosInstance.logout();
+            
+            // Clear user data
+            setUser(null);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token"); // Ensure token is cleared as well
+            
+            // After logout, you can manually handle redirection in the component where AuthProvider is used
+        } catch (error) {
+            console.error("Logout failed:", error.message);
+        }
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center h-screen">Loading...</div>;
     }
 
     return (

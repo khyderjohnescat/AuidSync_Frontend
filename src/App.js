@@ -5,6 +5,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import useIdleTimeout from "./context/useIdleTimeout"; // Import the hook (adjust the path as needed)
 import Login from "./components/pages/Login";
 import Dashboard from "./components/pages/Dashboard";
 import POS from "./components/pages/POS";
@@ -23,10 +24,14 @@ import ReadyOrders from "./components/pages/readyOrders";
 import DiscountManager from "./components/pages/discountManager";
 import AccountSecurity from "./components/pages/AccountSecurity";
 import AccountProfile from "./components/pages/AccountProfile";
+import { AuthProvider } from "./context/AuthContext"; // Import the AuthProvider
 
 function Layout() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Call useIdleTimeout inside Layout (which is inside Router)
+  useIdleTimeout(1 * 60 * 60 * 1000);
 
   // Hide sidebar when on the login or password reset pages
   const hideSidebar =
@@ -39,8 +44,7 @@ function Layout() {
       {!hideSidebar && <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />}
 
       <div
-        className={`flex-grow transition-all duration-300 ${!hideSidebar ? (isOpen ? "pl-60" : "pl-16") : ""
-          }`}
+        className={`flex-grow transition-all duration-300 ${!hideSidebar ? (isOpen ? "pl-60" : "pl-16") : ""}`}
       >
         <Routes>
           {/* Public Routes */}
@@ -153,10 +157,7 @@ function Layout() {
               </ProtectedRoute>
             }
           />
-          
         </Routes>
-
-        
       </div>
     </div>
   );
@@ -164,8 +165,10 @@ function Layout() {
 
 function App() {
   return (
-    <Router>
-      <Layout />
+    <Router> 
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
     </Router>
   );
 }

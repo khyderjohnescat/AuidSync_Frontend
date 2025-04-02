@@ -45,7 +45,6 @@ const OrderList = ({ isOpen }) => {
         params: filters,
         headers: { "Cache-Control": "no-cache" },
       });
-      console.log("Fetched orders:", response.data); // Debug log
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching orders:", error);

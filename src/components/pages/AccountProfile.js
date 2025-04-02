@@ -17,8 +17,24 @@ const SettingsProfile = () => {
   useEffect(() => {
     axiosInstance.get("/auth/profile").then((response) => {
       const { name, avatar, role } = response.data;
-      const [first_name, ...lastNameParts] = name.trim().split(" ");
-      const last_name = lastNameParts.join(" ") || "";
+      // Split the name into first_name and last_name
+      const nameParts = name.trim().split(/\s+/);
+      let first_name, last_name;
+
+      if (nameParts.length === 1) {
+        // Only first name (e.g., "John")
+        first_name = nameParts[0];
+        last_name = "";
+      } else if (nameParts.length === 2) {
+        // First name with one word and a last name (e.g., "John Smith")
+        first_name = nameParts[0];
+        last_name = nameParts[1];
+      } else {
+        // First name with two words and a last name (e.g., "John Paul Smith")
+        first_name = `${nameParts[0]} ${nameParts[1]}`; // First two words as first_name
+        last_name = nameParts.slice(2).join(" "); // Everything else as last_name
+      }
+
       setUser({ first_name, last_name, role: role || "N/A" });
       setCurrentAvatar(avatar ? `${API_BASE_URL}${avatar}` : null);
     });
@@ -45,15 +61,53 @@ const SettingsProfile = () => {
       return;
     }
 
+    // Validate first_name to ensure it has at most two words
+    const firstNameParts = first_name.trim().split(/\s+/);
+    if (firstNameParts.length > 2) {
+      toast.warn("First name can only have up to two words.", { position: "top-center", autoClose: 3000 });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await axiosInstance.put("/auth/update/name", { name: `${first_name} ${last_name}`.trim() });
-      toast.success(response.data.message !== "No changes made to name" ? "Profile updated successfully" : "No changes made to your profile.", {
+      // Combine first_name and last_name into a single name string
+      const name = `${first_name.trim()} ${last_name.trim()}`.trim();
+      const response = await axiosInstance.put("/auth/update/name", { name });
+      toast.success(
+        response.data.message !== "No changes made to name"
+          ? "Profile updated successfully"
+          : "No changes made to your profile.",
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+
+      // Update the local state to reflect the new name split
+      const nameParts = name.trim().split(/\s+/);
+      let updatedFirstName, updatedLastName;
+
+      if (nameParts.length === 1) {
+        updatedFirstName = nameParts[0];
+        updatedLastName = "";
+      } else if (nameParts.length === 2) {
+        updatedFirstName = nameParts[0];
+        updatedLastName = nameParts[1];
+      } else {
+        updatedFirstName = `${nameParts[0]} ${nameParts[1]}`;
+        updatedLastName = nameParts.slice(2).join(" ");
+      }
+
+      setUser((prev) => ({
+        ...prev,
+        first_name: updatedFirstName,
+        last_name: updatedLastName,
+      }));
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update profile.", {
         position: "top-center",
         autoClose: 3000,
       });
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update profile.", { position: "top-center", autoClose: 3000 });
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +130,10 @@ const SettingsProfile = () => {
       setImagePreview(null);
       setCurrentAvatar(`${API_BASE_URL}${response.data.avatar}`);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to upload profile image.", { position: "top-center", autoClose: 3000 });
+      toast.error(error.response?.data?.message || "Failed to upload profile image.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     } finally {
       setIsUploading(false);
     }
@@ -87,12 +144,24 @@ const SettingsProfile = () => {
       {/* Profile Picture Section */}
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-white mb-4">Profile Picture</h2>
-        <img src={currentAvatar || PLACEHOLDER_IMAGE} alt="Profile" className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-600 shadow-md" />
-        <input type="file" onChange={handleProfileImageChange} className="w-full py-2 px-3 bg-gray-700 text-gray-300 rounded-lg mb-4" />
+        <img
+          src={currentAvatar || PLACEHOLDER_IMAGE}
+          alt="Profile"
+          className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-gray-600 shadow-md"
+        />
+        <input
+          type="file"
+          onChange={handleProfileImageChange}
+          className="w-full py-2 px-3 bg-gray-700 text-gray-300 rounded-lg mb-4"
+        />
         {imagePreview && (
           <div className="mb-4">
             <p className="text-sm text-gray-400 mb-1">Preview:</p>
-            <img src={imagePreview} alt="Preview" className="w-32 h-32 rounded-full mx-auto border-4 border-gray-600 shadow-md" />
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-32 h-32 rounded-full mx-auto border-4 border-gray-600 shadow-md"
+            />
           </div>
         )}
         <button
@@ -110,30 +179,38 @@ const SettingsProfile = () => {
         <div className="space-y-5">
           {/* First Name Input */}
           <div>
-            <label htmlFor="first_name" className="text-sm text-gray-400">First Name</label>
+            <label htmlFor="first_name" className="text-sm text-gray-400">
+              First Name 
+            </label>
             <input
               id="first_name"
               name="first_name"
               value={user.first_name}
               onChange={handleInputChange}
               className="w-full p-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., John or John Paul"
             />
           </div>
           {/* Last Name Input */}
           <div>
-            <label htmlFor="last_name" className="text-sm text-gray-400">Last Name</label>
+            <label htmlFor="last_name" className="text-sm text-gray-400">
+              Last Name
+            </label>
             <input
               id="last_name"
               name="last_name"
               value={user.last_name}
               onChange={handleInputChange}
               className="w-full p-3 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Smith"
             />
           </div>
           {/* Role */}
           <div>
             <label className="text-sm text-gray-400 p-2">Role</label>
-            <span className="px-3 py-1 bg-green-600 text-white text-xs rounded-full">{user.role}</span>
+            <span className="px-3 py-1 bg-green-600 text-white text-xs rounded-full">
+              {user.role}
+            </span>
           </div>
           <button
             onClick={updateProfile}
