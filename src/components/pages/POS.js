@@ -270,8 +270,9 @@ const POS = () => {
                 >
                   {activeDiscount && (
                     <span className="absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-1 rounded flex items-center">
-                      <FaTag className="mr-1" /> Discount
-                    </span>
+                    <FaTag className="mr-1" /> 
+                    Discount: {activeDiscount.type === "fixed" ? `₱${activeDiscount.value}` : `${activeDiscount.value}%`}
+                  </span>
                   )}
                   <img
                     src={getImageUrl(product.image)}
