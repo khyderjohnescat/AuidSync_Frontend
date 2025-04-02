@@ -353,16 +353,14 @@ const OrderList = ({ isOpen }) => {
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
       <div className="bg-gray-900 rounded-lg p-4 text-gray-200 transition-all duration-300 h-auto min-h-full" style={{ paddingLeft: isOpen ? "30px" : "30px" }}>
-        <div className="mb-5">
-          <h2 className=" text-2xl font-bold text-white text-center mb-4">Kitchen Order List</h2>
-          <div className="flex flex-row gap-4 justify-end"> {/* Ensures left alignment */}
-            <Link
-              to="/readyorders"
-              className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
-            >
-              <CheckCircle size={18} /> Completed Orders
-            </Link>
-          </div>
+        <h2 className=" text-2xl font-bold text-white text-center">Kitchen Order List</h2>
+        <div className="flex flex-row gap-4 mb-4 justify-end"> {/* Ensures left alignment */}
+          <Link
+            to="/readyorders"
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <CheckCircle size={18} /> Completed Orders
+          </Link>
         </div>
 
         {/* Notification */}
@@ -423,8 +421,8 @@ const OrderList = ({ isOpen }) => {
         {/* Table Section */}
         {error && <div className="text-center text-red-500">{error}</div>}
         <div className="bg-gray-800 shadow-md rounded-md w-full overflow-hidden">
-        <table className="w-full table-fixed text-base">
-        <thead className="bg-gray-700 text-white">
+          <table className="w-full table-fixed text-base">
+            <thead className="bg-gray-700 text-white">
               <tr>
                 {[
                   "ID",
@@ -443,7 +441,7 @@ const OrderList = ({ isOpen }) => {
                   "Created At",
                   "Actions",
                 ].map((header) => (
-                  <th key={header} className="p-3 text-left">
+                  <th key={header} className="p-1 text-left">
                     {header}
                   </th>
                 ))}
@@ -452,9 +450,9 @@ const OrderList = ({ isOpen }) => {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-700">
-                  <td className="p-3">{order.id}</td>
-                  <td className="p-3">{order.order_type}</td>
-                  <td className="p-3">
+                  <td className="p-2">{order.id}</td>
+                  <td className="p-2">{order.order_type}</td>
+                  <td className="p-2">
                     <button
                       onClick={() => handleViewOrderDetails(order.id)}
                       className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
@@ -462,18 +460,18 @@ const OrderList = ({ isOpen }) => {
                       View
                     </button>
                   </td>
-                  <td className="p-3">{order.customer_name || "N/A"}</td>
-                  <td className="p-3">{order.staff_name || "N/A"}</td>
-                  <td className="p-3">{order.discount_type || "None"}</td>
-                  <td className="p-3">₱{order.discount_value || "0.00"}</td>
-                  <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-                  <td className="p-3">₱{order.final_price}</td>
-                  <td className="p-3">{order.payment_method}</td>
-                  <td className="p-3">₱{order.amount_paid}</td>
-                  <td className="p-3">₱{order.change}</td>
-                  <td className="p-3">{order.status}</td>
-                  <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-                  <td className="p-3">
+                  <td className="p-2">{order.customer_name || "N/A"}</td>
+                  <td className="p-2">{order.staff_name || "N/A"}</td>
+                  <td className="p-2">{order.discount_type || "None"}</td>
+                  <td className="p-2">₱{order.discount_value || "0.00"}</td>
+                  <td className="p-2">₱{order.discount_amount || "0.00"}</td>
+                  <td className="p-2">₱{order.final_price}</td>
+                  <td className="p-2">{order.payment_method}</td>
+                  <td className="p-2">₱{order.amount_paid}</td>
+                  <td className="p-2">₱{order.change}</td>
+                  <td className="p-2">{order.status}</td>
+                  <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+                  <td className="p-2">
                     <button
                       onClick={() => setStatusModalOrderId(order.id)}
                       className="bg-yellow-500 hover:bg-yellow-400 text-white px-2 py-1 rounded text-sm"

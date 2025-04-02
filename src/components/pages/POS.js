@@ -438,11 +438,10 @@ const POS = () => {
 
             {/* Checkout Button */}
             <button
-              className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
-                !canCheckout || loading
+              className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${!canCheckout || loading
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-green-500"
-              }`}
+                }`}
               onClick={checkout}
               disabled={!canCheckout || loading}
             >
