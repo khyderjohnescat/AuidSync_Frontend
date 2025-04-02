@@ -16,6 +16,7 @@ import ResetPassword from "./components/pages/resetPassword";
 import CompletedOrders from "./components/pages/completedOrders";
 import CancelledOrders from "./components/pages/cancelledOrders";
 import ReadyOrders from "./components/pages/readyOrders";
+import CategoryManager from "./components/pages/categoryManager";
 import DiscountManager from "./components/pages/discountManager";
 import AccountSecurity from "./components/pages/AccountSecurity";
 import AccountProfile from "./components/pages/AccountProfile";
@@ -55,6 +56,7 @@ function Layout() {
           <Route path="/cancelledorders" element={<ProtectedRoute><CancelledOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/readyorders" element={<ProtectedRoute><ReadyOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/discounts" element={<ProtectedRoute><DiscountManager isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/categories" element={<ProtectedRoute><CategoryManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/account-profile" element={<ProtectedRoute><AccountProfile isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/account-security" element={<ProtectedRoute><AccountSecurity isOpen={isOpen} /></ProtectedRoute>} />

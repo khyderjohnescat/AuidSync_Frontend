@@ -1,8 +1,10 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import { FaSearch, FaPlus, FaTimes, FaTrash, FaTag } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTimes, FaTrash, FaTag, FaList } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ProductManager() {
   const navigate = useNavigate();
@@ -80,16 +82,22 @@ function ProductManager() {
         await axiosInstance.put(`/products/update/${editingId}`, formDataToSend, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        toast.success("Product updated successfully", { position: "top-center", autoClose: 3000 });
       } else {
         await axiosInstance.post("/products/", formDataToSend, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        toast.success("Product added successfully", { position: "top-center", autoClose: 3000 });
       }
 
       await fetchProducts();
       closeModal();
     } catch (error) {
       console.error("Error submitting product:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to submit product", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -118,8 +126,13 @@ function ProductManager() {
     try {
       await axiosInstance.delete(`/products/${id}`);
       setProducts((prev) => prev.filter((product) => product.id !== id));
+      toast.success("Product deleted successfully", { position: "top-center", autoClose: 3000 });
     } catch (error) {
       console.error("Error deleting product:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to delete product", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -202,6 +215,12 @@ function ProductManager() {
               <FaPlus className="mr-2" /> Add Product
             </button>
             <button
+              onClick={() => navigate("/categories")}
+              className="bg-blue-500 px-2 py-2 rounded flex items-center"
+            >
+              <FaList className="mr-2" /> Manage Categories
+            </button>
+            <button
               onClick={() => navigate("/discounts")}
               className="bg-purple-500 px-2 py-2 rounded flex items-center"
             >
@@ -260,7 +279,7 @@ function ProductManager() {
                 >
                   {activeDiscount && (
                     <span className="absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-1 rounded flex items-center">
-                      <FaTag className="mr-1" /> 
+                      <FaTag className="mr-1" />
                       Discount: {activeDiscount.type === "fixed" ? `₱${activeDiscount.value}` : `${activeDiscount.value}%`}
                     </span>
                   )}
@@ -392,6 +411,7 @@ function ProductManager() {
           </div>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 }

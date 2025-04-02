@@ -178,7 +178,7 @@ const SettingsProfile = () => {
             </span>
           </div>
           <div>
-            <label className="text-sm text-gray-400">First Name (One or Two Words)</label>
+            <label className="text-sm text-gray-400">First Name</label>
             <input
               name="first_name"
               value={user.first_name}
