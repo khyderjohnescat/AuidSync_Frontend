@@ -92,41 +92,47 @@ function DeletedProducts() {
             No deleted products found.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => {
-              const imageUrl =
-                product.image && product.image.startsWith("http")
-                  ? product.image
-                  : product.image?.includes("uploads/")
-                    ? `http://localhost:5050/${product.image}`
-                    : `http://localhost:5050/uploads/${product.image}`;
+          <div className="flex-1 overflow-y-auto p-2 flex-col h-screen" style={{ maxHeight: "67vh" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5  rounded-lg" style={{ maxHeight: "50vh" }}>
+              {filteredProducts.map((product) => {
+                const imageUrl =
+                  product.image && product.image.startsWith("http")
+                    ? product.image
+                    : product.image?.includes("uploads/")
+                      ? `http://localhost:5050/${product.image}`
+                      : `http://localhost:5050/uploads/${product.image}`;
 
-              return (
-                <div
-                  key={product.id}
-                  className="bg-gray-800 p-4 rounded-lg shadow-md"
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-40 object-cover rounded-md mb-3"
-                  />
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-400">
-                    Category:{" "}
-                    {categories.find((cat) => cat.id === product.category_id)
-                      ?.name || "Unknown"}
-                  </p>
-                  <p className="text-green-400 font-bold">₱{product.price}</p>
-                  <button
-                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    onClick={() => handleRestore(product.id)}
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-gray-800 p-4 rounded-lg shadow-md"
                   >
-                    Restore
-                  </button>
-                </div>
-              );
-            })}
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-40 object-cover rounded-md mb-3"
+                      onError={(e) => {
+                        console.error(`Failed to load image for ${product.name}: ${imageUrl}`);
+                        e.target.src = "https://placehold.co/150";
+                      }}
+                    />
+                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                    <p className="text-gray-400">
+                      Category:{" "}
+                      {categories.find((cat) => cat.id === product.category_id)
+                        ?.name || "Unknown"}
+                    </p>
+                    <p className="text-green-400 font-bold">₱{product.price}</p>
+                    <button
+                      className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                      onClick={() => handleRestore(product.id)}
+                    >
+                      Restore
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

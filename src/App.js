@@ -15,12 +15,12 @@ import ForgotPassword from "./components/pages/forgotpassword";
 import ResetPassword from "./components/pages/resetPassword";
 import CompletedOrders from "./components/pages/completedOrders";
 import CancelledOrders from "./components/pages/cancelledOrders";
-import ReadyOrders from "./components/pages/readyOrders";
+import CompletedKitchenOrders from "./components/pages/completeKitchenOrders";
 import CategoryManager from "./components/pages/categoryManager";
 import DiscountManager from "./components/pages/discountManager";
 import AccountSecurity from "./components/pages/AccountSecurity";
 import AccountProfile from "./components/pages/AccountProfile";
-import { AuthProvider } from "./context/AuthContext"; 
+import { AuthProvider } from "./context/AuthContext";
 
 function Layout() {
   const location = useLocation();
@@ -54,7 +54,7 @@ function Layout() {
           <Route path="/products/deleted" element={<ProtectedRoute><DeletedProducts isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/completedorders" element={<ProtectedRoute><CompletedOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/cancelledorders" element={<ProtectedRoute><CancelledOrders isOpen={isOpen} /></ProtectedRoute>} />
-          <Route path="/readyorders" element={<ProtectedRoute><ReadyOrders isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/completekitchenorders" element={<ProtectedRoute><CompletedKitchenOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/discounts" element={<ProtectedRoute><DiscountManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute><CategoryManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings isOpen={isOpen} /></ProtectedRoute>} />
