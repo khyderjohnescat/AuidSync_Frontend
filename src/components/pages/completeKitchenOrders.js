@@ -235,7 +235,7 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
 
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
-      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }} >
+      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
         <h2 className="text-2xl font-bold mb-4 text-white text-center">Complete Orders</h2>
         <button
           onClick={() => navigate("/ordersKitchen")}

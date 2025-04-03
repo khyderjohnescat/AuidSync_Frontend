@@ -364,7 +364,7 @@ const OrderList = ({ isOpen }) => {
 
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white ">
-      <div className={`bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300`} style={{ paddingLeft: isOpen ? "30px" : "30px" }}>
+      <div className={`bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300`}>
         <h2 className="text-2xl font-bold text-white text-center">Order List</h2>
 
         <div className="flex flex-row items-end gap-4 mb-4 justify-end">
