@@ -4,6 +4,8 @@ import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash, FaBackward, FaBackspace } f
 import axiosInstance from "../../context/axiosInstance"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowLeftCircle, ArrowLeftFromLine, ArrowLeftSquare, ArrowRightCircleIcon, SendToBackIcon, SkipBackIcon } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function DiscountManager() {
   const navigate = useNavigate();
@@ -15,12 +17,11 @@ function DiscountManager() {
     value: "",
     start_date: "",
     end_date: "",
-    product_id: "",
+    product_id: "", // Will be set to the first product in useEffect
   });
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
-
 
   // Fetch Discounts
   const fetchDiscounts = useCallback(async () => {
@@ -29,6 +30,10 @@ function DiscountManager() {
       setDiscounts(response.data);
     } catch (error) {
       console.error("Error fetching discounts:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to fetch discounts", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   }, []);
 
@@ -36,11 +41,24 @@ function DiscountManager() {
   const fetchProducts = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/products/");
-      setProducts(response.data.filter((p) => p.is_active));
+      const activeProducts = response.data.filter((p) => p.is_active);
+      setProducts(activeProducts);
+
+      // Set the default product_id to the first product if available
+      if (activeProducts.length > 0 && !formData.product_id && !editingId) {
+        setFormData((prev) => ({
+          ...prev,
+          product_id: activeProducts[0].id.toString(),
+        }));
+      }
     } catch (error) {
       console.error("Error fetching products:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to fetch products", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
-  }, []);
+  }, [formData.product_id, editingId]);
 
   useEffect(() => {
     fetchDiscounts();
@@ -58,13 +76,20 @@ function DiscountManager() {
 
     try {
       const dataToSend = {
-        type: formData.type,
+        type: formData.type, // Fixed: Use the actual value, not a string
         value: parseFloat(formData.value),
         start_date: formData.start_date, // Already in ISO format from datetime-local
         end_date: formData.end_date || null,
         product_id: formData.product_id ? parseInt(formData.product_id) : null,
       };
 
+      // Validation: Ensure a product is selected
+      if (!dataToSend.product_id) {
+        setError("Please select a product to apply the discount to");
+        return;
+      }
+
+      // Existing validations
       if (isNaN(dataToSend.value) || dataToSend.value <= 0) {
         setError("Value must be a positive number");
         return;
@@ -74,10 +99,19 @@ function DiscountManager() {
         return;
       }
 
+      let response;
       if (editingId) {
-        await axiosInstance.put(`/discounts/${editingId}`, dataToSend);
+        response = await axiosInstance.put(`/discounts/${editingId}`, dataToSend);
+        toast.success(response.data.message || "Discount updated successfully", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       } else {
-        await axiosInstance.post("/discounts/", dataToSend);
+        response = await axiosInstance.post("/discounts/", dataToSend);
+        toast.success(response.data.message || "Discount added successfully", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       }
 
       await fetchDiscounts();
@@ -85,6 +119,10 @@ function DiscountManager() {
     } catch (error) {
       setError(error.response?.data?.message || "Error submitting discount");
       console.error("Error submitting discount:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to submit discount", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -110,10 +148,18 @@ function DiscountManager() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this discount?")) {
       try {
-        await axiosInstance.delete(`/discounts/${id}`);
+        const response = await axiosInstance.delete(`/discounts/${id}`);
         setDiscounts((prev) => prev.filter((d) => d.id !== id));
+        toast.success(response.data.message || "Discount deleted successfully", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       } catch (error) {
         console.error("Error deleting discount:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Failed to delete discount", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       }
     }
   };
@@ -125,7 +171,7 @@ function DiscountManager() {
       value: "",
       start_date: "",
       end_date: "",
-      product_id: "",
+      product_id: products.length > 0 ? products[0].id.toString() : "", // Default to first product
     });
     setIsModalOpen(true);
     setError("");
@@ -195,42 +241,50 @@ function DiscountManager() {
               </tr>
             </thead>
             <tbody>
-              {filteredDiscounts.map((discount) => (
-                <tr key={discount.id} className="hover:bg-gray-700">
-                  <td className="p-3">{discount.id}</td>
-                  <td className="p-3">{discount.type}</td>
-                  <td className="p-3">
-                    {discount.type === "fixed" ? "₱" : ""}
-                    {Number(discount.value).toFixed(2)}
-                    {discount.type === "percentage" ? "%" : ""}
-                  </td>
-                  <td className="p-3">
-                    {new Date(discount.start_date).toLocaleString()}
-                  </td>
-                  <td className="p-3">
-                    {discount.end_date
-                      ? new Date(discount.end_date).toLocaleString()
-                      : "N/A"}
-                  </td>
-                  <td className="p-3">{discount.product?.name || "None"}</td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(discount)}
-                        className="bg-blue-500 hover:bg-blue-400 text-white px-2 py-1 rounded text-sm"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(discount.id)}
-                        className="bg-red-500 hover:bg-red-400 text-white px-2 py-1 rounded text-sm"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
+              {filteredDiscounts.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="p-3 text-center text-gray-400">
+                    No discounts are set.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredDiscounts.map((discount) => (
+                  <tr key={discount.id} className="hover:bg-gray-700">
+                    <td className="p-3">{discount.id}</td>
+                    <td className="p-3">{discount.type}</td>
+                    <td className="p-3">
+                      {discount.type === "fixed" ? "₱" : ""}
+                      {Number(discount.value).toFixed(2)}
+                      {discount.type === "percentage" ? "%" : ""}
+                    </td>
+                    <td className="p-3">
+                      {new Date(discount.start_date).toLocaleString()}
+                    </td>
+                    <td className="p-3">
+                      {discount.end_date
+                        ? new Date(discount.end_date).toLocaleString()
+                        : "N/A"}
+                    </td>
+                    <td className="p-3">{discount.product?.name || "None"}</td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(discount)}
+                          className="bg-blue-500 hover:bg-blue-400 text-white px-2 py-1 rounded text-sm"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(discount.id)}
+                          className="bg-red-500 hover:bg-red-400 text-white px-2 py-1 rounded text-sm"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -257,97 +311,117 @@ function DiscountManager() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Discount Type
-                  </label>
-                  <select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    required
-                    className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+              {products.length === 0 ? (
+                <div className="mb-4 p-2 bg-yellow-600 text-white rounded text-sm">
+                  No active products available. Please add a product first.
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Discount Type
+                    </label>
+                    <select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      required
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="fixed">Fixed (₱)</option>
+                      <option value="percentage">Percentage (%)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Discount Value
+                    </label>
+                    <input
+                      type="number"
+                      name="value"
+                      value={formData.value}
+                      onChange={handleChange}
+                      placeholder="e.g., 5.00"
+                      step="0.01"
+                      min="0"
+                      required
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Start Date & Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      name="start_date"
+                      value={formData.start_date}
+                      onChange={handleChange}
+                      required
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      End Date & Time (Optional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      name="end_date"
+                      value={formData.end_date}
+                      onChange={handleChange}
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Apply to Product
+                    </label>
+                    <select
+                      name="product_id"
+                      value={formData.product_id}
+                      onChange={handleChange}
+                      required
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    >
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="mt-6 bg-green-500 hover:bg-green-600 px-4 py-2 rounded w-full text-white font-medium transition duration-200"
                   >
-                    <option value="fixed">Fixed (₱)</option>
-                    <option value="percentage">Percentage (%)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Discount Value
-                  </label>
-                  <input
-                    type="number"
-                    name="value"
-                    value={formData.value}
-                    onChange={handleChange}
-                    placeholder="e.g., 5.00"
-                    step="0.01"
-                    min="0"
-                    required
-                    className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Start Date & Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="start_date"
-                    value={formData.start_date}
-                    onChange={handleChange}
-                    required
-                    className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    End Date & Time (Optional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="end_date"
-                    value={formData.end_date}
-                    onChange={handleChange}
-                    className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Apply to Product (Optional)
-                  </label>
-                  <select
-                    name="product_id"
-                    value={formData.product_id}
-                    onChange={handleChange}
-                    className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">No Product (Global Discount)</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  className="mt-6 bg-green-500 hover:bg-green-600 px-4 py-2 rounded w-full text-white font-medium transition duration-200"
-                >
-                  {editingId ? "Update Discount" : "Add Discount"}
-                </button>
-              </form>
+                    {editingId ? "Update Discount" : "Add Discount"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
