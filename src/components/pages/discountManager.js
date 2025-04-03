@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash, FaBackward, FaBackspace } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTimes, FaEdit, FaPowerOff, FaBackward, FaBackspace } from "react-icons/fa";
 import axiosInstance from "../../context/axiosInstance"; // Adjust path
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowLeftCircle, ArrowLeftFromLine, ArrowLeftSquare, ArrowRightCircleIcon, SendToBackIcon, SkipBackIcon } from "lucide-react";
@@ -12,12 +12,14 @@ function DiscountManager() {
   const [discounts, setDiscounts] = useState([]);
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active"); // New state for status filter
   const [formData, setFormData] = useState({
     type: "fixed",
     value: "",
     start_date: "",
     end_date: "",
-    product_id: "", // Will be set to the first product in useEffect
+    product_id: "",
+    status: "active", // Add status to formData
   });
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +28,7 @@ function DiscountManager() {
   // Fetch Discounts
   const fetchDiscounts = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/discounts/");
+      const response = await axiosInstance.get(`/discounts/?status=${statusFilter}`);
       setDiscounts(response.data);
     } catch (error) {
       console.error("Error fetching discounts:", error.response?.data || error.message);
@@ -35,7 +37,7 @@ function DiscountManager() {
         autoClose: 3000,
       });
     }
-  }, []);
+  }, [statusFilter]);
 
   // Fetch Products
   const fetchProducts = useCallback(async () => {
@@ -44,7 +46,6 @@ function DiscountManager() {
       const activeProducts = response.data.filter((p) => p.is_active);
       setProducts(activeProducts);
 
-      // Set the default product_id to the first product if available
       if (activeProducts.length > 0 && !formData.product_id && !editingId) {
         setFormData((prev) => ({
           ...prev,
@@ -76,20 +77,19 @@ function DiscountManager() {
 
     try {
       const dataToSend = {
-        type: formData.type, // Fixed: Use the actual value, not a string
+        type: formData.type,
         value: parseFloat(formData.value),
-        start_date: formData.start_date, // Already in ISO format from datetime-local
+        start_date: formData.start_date,
         end_date: formData.end_date || null,
         product_id: formData.product_id ? parseInt(formData.product_id) : null,
+        status: formData.status, // Include status in the data to send
       };
 
-      // Validation: Ensure a product is selected
       if (!dataToSend.product_id) {
         setError("Please select a product to apply the discount to");
         return;
       }
 
-      // Existing validations
       if (isNaN(dataToSend.value) || dataToSend.value <= 0) {
         setError("Value must be a positive number");
         return;
@@ -130,7 +130,7 @@ function DiscountManager() {
     const formatDateTime = (date) => {
       if (!date) return "";
       const d = new Date(date);
-      return d.toISOString().slice(0, 16); // Format to YYYY-MM-DDTHH:MM
+      return d.toISOString().slice(0, 16);
     };
 
     setFormData({
@@ -139,24 +139,26 @@ function DiscountManager() {
       start_date: formatDateTime(discount.start_date),
       end_date: formatDateTime(discount.end_date),
       product_id: discount.product?.id ? discount.product.id.toString() : "",
+      status: discount.status, // Include status in formData
     });
     setEditingId(discount.id);
     setIsModalOpen(true);
     setError("");
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this discount?")) {
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    if (window.confirm(`Are you sure you want to set this discount to ${newStatus}?`)) {
       try {
-        const response = await axiosInstance.delete(`/discounts/${id}`);
-        setDiscounts((prev) => prev.filter((d) => d.id !== id));
-        toast.success(response.data.message || "Discount deleted successfully", {
+        const response = await axiosInstance.patch(`/discounts/${id}/status`, { status: newStatus });
+        await fetchDiscounts(); // Refresh the list
+        toast.success(response.data.message || `Discount set to ${newStatus} successfully`, {
           position: "top-center",
           autoClose: 3000,
         });
       } catch (error) {
-        console.error("Error deleting discount:", error.response?.data || error.message);
-        toast.error(error.response?.data?.message || "Failed to delete discount", {
+        console.error("Error toggling discount status:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Failed to toggle discount status", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -171,7 +173,8 @@ function DiscountManager() {
       value: "",
       start_date: "",
       end_date: "",
-      product_id: products.length > 0 ? products[0].id.toString() : "", // Default to first product
+      product_id: products.length > 0 ? products[0].id.toString() : "",
+      status: "active", // Default status to active
     });
     setIsModalOpen(true);
     setError("");
@@ -214,16 +217,26 @@ function DiscountManager() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="flex items-center bg-gray-700 p-2 rounded mb-4">
-          <FaSearch className="text-gray-400 mx-2" />
-          <input
-            type="text"
-            placeholder="Search discounts by type, value, or product..."
-            className="bg-transparent outline-none text-white w-full px-2"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* Search Bar and Status Filter */}
+        <div className="flex items-center justify-between bg-gray-700 p-2 rounded mb-4">
+          <div className="flex items-center w-2/3">
+            <FaSearch className="text-gray-400 mx-2" />
+            <input
+              type="text"
+              placeholder="Search discounts by type, value, or product..."
+              className="bg-transparent outline-none text-white w-full px-2"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="bg-gray-700 p-2 rounded text-white w-1/4"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
 
         {/* Discounts Table */}
@@ -231,7 +244,7 @@ function DiscountManager() {
           <table className="min-w-full table-auto text-base">
             <thead className="bg-gray-700 text-white">
               <tr>
-                {["ID", "Type", "Value", "Start Date & Time", "End Date & Time", "Product", "Actions"].map(
+                {["ID", "Type", "Value", "Start Date & Time", "End Date & Time", "Product", "Status", "Actions"].map(
                   (header) => (
                     <th key={header} className="p-3 text-left">
                       {header}
@@ -243,7 +256,7 @@ function DiscountManager() {
             <tbody>
               {filteredDiscounts.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="p-3 text-center text-gray-400">
+                  <td colSpan="8" className="p-3 text-center text-gray-400">
                     No discounts are set.
                   </td>
                 </tr>
@@ -267,6 +280,17 @@ function DiscountManager() {
                     </td>
                     <td className="p-3">{discount.product?.name || "None"}</td>
                     <td className="p-3">
+                      <span
+                        className={
+                          discount.status === "active"
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }
+                      >
+                        {discount.status.charAt(0).toUpperCase() + discount.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleEdit(discount)}
@@ -275,10 +299,14 @@ function DiscountManager() {
                           <FaEdit />
                         </button>
                         <button
-                          onClick={() => handleDelete(discount.id)}
-                          className="bg-red-500 hover:bg-red-400 text-white px-2 py-1 rounded text-sm"
+                          onClick={() => handleToggleStatus(discount.id, discount.status)}
+                          className={`${
+                            discount.status === "active"
+                              ? "bg-red-500 hover:bg-red-400"
+                              : "bg-green-500 hover:bg-green-400"
+                          } text-white px-2 py-1 rounded text-sm`}
                         >
-                          <FaTrash />
+                          <FaPowerOff />
                         </button>
                       </div>
                     </td>
@@ -393,6 +421,22 @@ function DiscountManager() {
                           {product.name}
                         </option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleChange}
+                      required
+                      className="p-2 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
                     </select>
                   </div>
 
