@@ -2,9 +2,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import axiosInstance from "../../context/axiosInstance";
-import { CheckCircle, CheckCircle2, CheckCircle2Icon, XCircle } from "lucide-react";
-import { IoCheckmarkCircle } from "react-icons/io5";
+import axiosInstance from "../../../context/axiosInstance";
+import { CheckCircle, XCircle } from "lucide-react";
+
 
 const OrderList = ({ isOpen }) => {
   const [orders, setOrders] = useState([]);
@@ -33,7 +33,15 @@ const OrderList = ({ isOpen }) => {
   useEffect(() => {
     const cancel = debouncedFilters();
     fetchOrders(); // Initial fetch
-    return () => cancel();
+
+    const pollingInterval = setInterval(() => {
+      fetchOrders();
+    }, 500);
+
+    return () => {
+      cancel();
+      clearInterval(pollingInterval);
+    };
   }, [debouncedFilters]);
 
   const fetchOrders = async () => {
@@ -41,13 +49,15 @@ const OrderList = ({ isOpen }) => {
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/orders/kitchen/", {
-        params: filters,
+      const response = await axiosInstance.get("/orders", {
+        params: {
+          ...filters,
+          status_not: "completed", // Exclude completed orders
+        },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error("Error fetching orders:", error);
       setError("Failed to fetch orders");
     } finally {
       setLoading(false);
@@ -69,21 +79,22 @@ const OrderList = ({ isOpen }) => {
       date: "",
       payment_method: "",
     });
-    fetchOrders(); // Immediate refresh
+    fetchOrders();
   };
 
   const handleViewOrderDetails = async (orderId) => {
     try {
       const response = await axiosInstance.get(`/orders/${orderId}`);
       setSelectedOrder(response.data);
+      await fetchOrders();
     } catch (error) {
-      console.error("Error fetching order details:", error);
       setError("Failed to fetch order details");
     }
   };
 
   const handleCloseModal = () => {
     setSelectedOrder(null);
+    fetchOrders();
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -101,8 +112,8 @@ const OrderList = ({ isOpen }) => {
       await fetchOrders();
 
       if (selectedOrder && selectedOrder.id === orderId) {
-        if (newStatus === "ready") {
-          setSelectedOrder(null); // Close modal on "ready"
+        if (newStatus === "completed" || newStatus === "cancelled") {
+          setSelectedOrder(null);
         } else {
           setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
         }
@@ -110,7 +121,6 @@ const OrderList = ({ isOpen }) => {
 
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
-      console.error("Error updating order status:", error);
       setError("Failed to update order status");
       setNotification({
         message: "Couldn’t update the order status",
@@ -257,7 +267,7 @@ const OrderList = ({ isOpen }) => {
                     {selectedOrder.discount_type || "None"}
                   </p>
                   <p>
-                    <span className="font-semibold">Discount Value:</span> ₱
+                    <span className="font-semibold">Discount Value:</span>
                     {selectedOrder.discount_value || "0.00"}
                   </p>
                   <p>
@@ -319,25 +329,27 @@ const OrderList = ({ isOpen }) => {
           </p>
           <div className="flex flex-col gap-4">
             <button
-              onClick={() => handleStatusChange(order.id, "processing")}
-              disabled={order.status === "processing"}
-              className={`p-4 rounded-lg text-center ${order.status === "processing"
-                ? "bg-gray-600 cursor-not-allowed text-gray-400"
-                : "bg-yellow-500 hover:bg-yellow-400 text-white"
-                }`}
-            >
-              <span className="font-semibold">Mark as Processing</span>
-            </button>
-            <button
-              onClick={() => handleStatusChange(order.id, "ready")}
-              disabled={order.status === "ready"}
-              className={`p-4 rounded-lg text-center ${order.status === "ready"
+              onClick={() => handleStatusChange(order.id, "completed")}
+              disabled={order.status !== "ready"}
+              className={`p-4 rounded-lg text-center ${order.status !== "ready"
                 ? "bg-gray-600 cursor-not-allowed text-gray-400"
                 : "bg-green-500 hover:bg-green-400 text-white"
                 }`}
             >
-              <span className="font-semibold">Mark as Ready</span>
+              <span className="font-semibold">Mark as Completed</span>
             </button>
+            {order.status !== "ready" && (
+              <button
+                onClick={() => handleStatusChange(order.id, "cancelled")}
+                disabled={order.status === "processing"}
+                className={`p-4 rounded-lg text-center ${order.status === "processing"
+                  ? "bg-gray-600 cursor-not-allowed text-gray-400"
+                  : "bg-red-500 hover:bg-red-400 text-white"
+                  }`}
+              >
+                <span className="font-semibold">Cancel Order</span>
+              </button>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -351,15 +363,22 @@ const OrderList = ({ isOpen }) => {
   };
 
   return (
-    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
-      <div className="bg-gray-900 rounded-lg p-4 text-gray-200 transition-all duration-300 h-auto min-h-full">
-        <h2 className=" text-2xl font-bold text-white text-center">Kitchen Order List</h2>
-        <div className="flex flex-row gap-4 mb-4 justify-end"> {/* Ensures left alignment */}
+    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white ">
+      <div className={`bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300`}>
+        <h2 className="text-2xl font-bold text-white text-center">Order List</h2>
+
+        <div className="flex flex-row items-end gap-4 mb-4 justify-end">
           <Link
-            to="/completekitchenorders"
+            to="/completedorders"
             className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             <CheckCircle size={18} /> Completed Orders
+          </Link>
+          <Link
+            to="/cancelledorders"
+            className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <XCircle size={18} /> Cancelled Orders
           </Link>
         </div>
 
@@ -418,7 +437,7 @@ const OrderList = ({ isOpen }) => {
           </button>
         </div>
 
-        {/* Table Section */}
+{/* Table Section */}
 {error && <div className="text-center text-red-500">{error}</div>}
 <div className="bg-gray-800 shadow-md rounded-md w-full overflow-hidden">
   <div className="overflow-x-auto"> {/* Add this wrapper for horizontal scrolling */}
@@ -438,8 +457,8 @@ const OrderList = ({ isOpen }) => {
             "Payment",
             "Paid",
             "Change",
-            "Status",
             "Created At",
+            "Status",
             "Actions",
           ].map((header) => (
             <th key={header} className="p-1 text-left">
@@ -470,8 +489,8 @@ const OrderList = ({ isOpen }) => {
             <td className="p-2">{order.payment_method}</td>
             <td className="p-2">₱{order.amount_paid}</td>
             <td className="p-2">₱{order.change}</td>
-            <td className="p-2">{order.status}</td>
             <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+            <td className="p-2">{order.status}</td>
             <td className="p-2">
               <button
                 onClick={() => setStatusModalOrderId(order.id)}

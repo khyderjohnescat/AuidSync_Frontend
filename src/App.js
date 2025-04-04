@@ -2,24 +2,24 @@ import { useState } from "react";
 import { useLocation, Routes, Route,  BrowserRouter as Router  } from "react-router-dom";
 import useIdleTimeout from "./context/useIdleTimeout"; // Import the hook (adjust the path as needed)
 import Login from "./components/pages/Login";
-import Dashboard from "./components/pages/Dashboard";
-import POS from "./components/pages/POS";
-import Settings from "./components/pages/Settings";
-import Orderlist from "./components/pages/Orderlist";
-import OrdersKitchen from "./components/pages/ordersKitchen";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./components/pages/staff/Staff_Dashboard";
+import POS from "./components/pages/staff/POS";
+import Settings from "./components/pages/settings/Settings";
+import Orderlist from "./components/pages/staff/Orderlist";
+import KitchenOrderlist from "./components/pages/kitchenstaff/KitchenOrderlist";
+import ProtectedRoute from "./components/services/ProtectedRoute";
 import Sidebar from "./components/parts/Sidebar";
-import Manageproduct from "./components/pages/Manageproduct";
-import DeletedProducts from "./components/pages/deletedProducts";
+import Manageproduct from "./components/pages/staff/ManageProducts";
+import DeletedProducts from "./components/pages/staff/deletedProducts";
 import ForgotPassword from "./components/pages/forgotpassword";
 import ResetPassword from "./components/pages/resetPassword";
-import CompletedOrders from "./components/pages/completedOrders";
-import CancelledOrders from "./components/pages/cancelledOrders";
-import CompletedKitchenOrders from "./components/pages/completeKitchenOrders";
-import CategoryManager from "./components/pages/categoryManager";
-import DiscountManager from "./components/pages/discountManager";
-import AccountSecurity from "./components/pages/AccountSecurity";
-import AccountProfile from "./components/pages/AccountProfile";
+import CompletedOrders from "./components/pages/staff/completedOrders";
+import CancelledOrders from "./components/pages/staff/cancelledOrders";
+import KitchenCompleteOrders from "./components/pages/kitchenstaff/kitchenCompleteOrders";
+import CategoryManager from "./components/pages/staff/ManageCategories";
+import DiscountManager from "./components/pages/staff/ManageDiscounts";
+import AccountSecurity from "./components/pages/settings/AccountSecurity";
+import AccountProfile from "./components/pages/settings/AccountProfile";
 import { AuthProvider } from "./context/AuthContext";
 
 function Layout() {
@@ -49,12 +49,12 @@ function Layout() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/pos" element={<ProtectedRoute><POS isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/orderlist" element={<ProtectedRoute><Orderlist isOpen={isOpen} /></ProtectedRoute>} />
-          <Route path="/ordersKitchen" element={<ProtectedRoute><OrdersKitchen isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/kitchenorderlist" element={<ProtectedRoute><KitchenOrderlist isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/manageproduct" element={<ProtectedRoute><Manageproduct isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/products/deleted" element={<ProtectedRoute><DeletedProducts isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/completedorders" element={<ProtectedRoute><CompletedOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/cancelledorders" element={<ProtectedRoute><CancelledOrders isOpen={isOpen} /></ProtectedRoute>} />
-          <Route path="/completekitchenorders" element={<ProtectedRoute><CompletedKitchenOrders isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/kitchencompleteorders" element={<ProtectedRoute><KitchenCompleteOrders isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/discounts" element={<ProtectedRoute><DiscountManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute><CategoryManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings isOpen={isOpen} /></ProtectedRoute>} />

@@ -1,18 +1,17 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
-import axiosInstance from "../../context/axiosInstance";
+import axiosInstance from "../../../context/axiosInstance";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
-import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircle } from "lucide-react";
 
-
-const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
+const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const navigate = useNavigate(); // ✅ Initialize useNavigate
+  const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
     search: "",
@@ -52,16 +51,16 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/orders/cancelled", {
+      const response = await axiosInstance.get("/orders/ready/", {
         params: {
           ...filters,
-          status: "cancelled",
+          status: "ready", // Only fetch ready orders
         },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      setError("Failed to fetch cancelled orders");
+      setError("Failed to fetch ready orders");
     } finally {
       setLoading(false);
     }
@@ -145,7 +144,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
 
           <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-            Cancelled Order Details
+            Ready Order Details
           </h2>
 
           <div className="flex gap-6">
@@ -237,14 +236,14 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
       <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
-        <h2 className="text-2xl font-bold mb-6 text-white text-center">Cancelled Orders</h2>
+        <h2 className="text-2xl font-bold mb-4 text-white text-center">Complete Orders</h2>
         <button
-          onClick={() => navigate("/orderlist")}
+          onClick={() => navigate("/kitchenorderlist")}
           className="bg-blue-500 px-4 py-2 rounded flex items-center"
         >
           <ArrowLeftCircle className="mr-2" /> Back
         </button>
-        
+
         {/* Filter Section */}
         <div className="mt-5 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
           <input
@@ -290,7 +289,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
         </div>
 
-{/* Table Section */}
+        {/* Table Section */}
 {error && <div className="text-center text-red-500">{error}</div>}
 <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-5"> {/* Add overflow-x-auto for horizontal scrolling */}
   <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
@@ -360,4 +359,4 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   );
 };
 
-export default CancelledOrders;
+export default ReadyOrders;

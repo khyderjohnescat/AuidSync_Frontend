@@ -32,7 +32,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/dashboard" icon={<MdSpaceDashboard />} text="Dashboard" isOpen={isOpen} location={location} />
           <NavItem to="/pos" icon={<MdRestaurantMenu />} text="Order Menu" isOpen={isOpen} location={location} />
           <NavItem to="/orderlist" icon={<HiOutlineClipboardList />} text="Order List" isOpen={isOpen} location={location} />
-          <NavItem to="/ordersKitchen" icon={<FaUtensils />} text="Orders (Kitchen)" isOpen={isOpen} location={location} />
+          <NavItem to="/kitchenorderlist" icon={<FaUtensils />} text="Orders (Kitchen)" isOpen={isOpen} location={location} />
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
         </nav>
 

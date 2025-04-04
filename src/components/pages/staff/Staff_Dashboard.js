@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState, useMemo } from "react";
-import AuthContext from "../../context/AuthContext";
+import AuthContext from "../../../context/AuthContext";
 import { Bar, Pie, Line } from "react-chartjs-2";
-import axiosInstance from "../../context/axiosInstance";
+import axiosInstance from "../../../context/axiosInstance";
 import {
     Chart as ChartJS,
     CategoryScale,

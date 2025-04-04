@@ -1,17 +1,18 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
-import axiosInstance from "../../context/axiosInstance";
+import axiosInstance from "../../../context/axiosInstance";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeftCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
 
-const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
+
+const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // ✅ Initialize useNavigate
 
   const [filters, setFilters] = useState({
     search: "",
@@ -51,16 +52,16 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/orders/ready/", {
+      const response = await axiosInstance.get("/orders/cancelled", {
         params: {
           ...filters,
-          status: "ready", // Only fetch ready orders
+          status: "cancelled",
         },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      setError("Failed to fetch ready orders");
+      setError("Failed to fetch cancelled orders");
     } finally {
       setLoading(false);
     }
@@ -144,7 +145,7 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
 
           <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-            Ready Order Details
+            Cancelled Order Details
           </h2>
 
           <div className="flex gap-6">
@@ -235,15 +236,15 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
 
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
-      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300" style={{ paddingLeft: isOpen ? '30px' : '30px' }} >
-        <h2 className="text-2xl font-bold mb-4 text-white text-center">Ready Orders</h2>
+      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
+        <h2 className="text-2xl font-bold mb-6 text-white text-center">Cancelled Orders</h2>
         <button
-          onClick={() => navigate("/manageproduct")}
+          onClick={() => navigate("/orderlist")}
           className="bg-blue-500 px-4 py-2 rounded flex items-center"
         >
           <ArrowLeftCircle className="mr-2" /> Back
         </button>
-
+        
         {/* Filter Section */}
         <div className="mt-5 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
           <input
@@ -289,63 +290,63 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
         </div>
 
-        {/* Table Section */}
-        {error && <div className="text-center text-red-500">{error}</div>}
-        <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-5">
-          <table className="min-w-full table-auto text-base">
-            <thead className="bg-gray-700 text-white">
-              <tr>
-                {[
-                  "ID",
-                  "Order Type",
-                  "Customer",
-                  "Staff",
-                  "Discount Type",
-                  "Value",
-                  "Amount",
-                  "Final Price",
-                  "Payment",
-                  "Paid",
-                  "Change",
-                  "Status",
-                  "Created At",
-                  "",
-                ].map((header) => (
-                  <th key={header} className="p-3 text-left">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-700">
-                  <td className="p-3">{order.id}</td>
-                  <td className="p-3">{order.order_type}</td>
-                  <td className="p-3">{order.customer_name || "N/A"}</td>
-                  <td className="p-3">{order.staff_name || "N/A"}</td>
-                  <td className="p-3">{order.discount_type || "None"}</td>
-                  <td className="p-3">₱{order.discount_value || "0.00"}</td>
-                  <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-                  <td className="p-3">₱{order.final_price}</td>
-                  <td className="p-3">{order.payment_method}</td>
-                  <td className="p-3">₱{order.amount_paid}</td>
-                  <td className="p-3">₱{order.change}</td>
-                  <td className="p-3">{order.status}</td>
-                  <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-                  <td className="p-3">
-                    <button
-                      onClick={() => handleViewOrderDetails(order.id)}
-                      className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+{/* Table Section */}
+{error && <div className="text-center text-red-500">{error}</div>}
+<div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-5"> {/* Add overflow-x-auto for horizontal scrolling */}
+  <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
+    <thead className="bg-gray-700 text-white">
+      <tr>
+        {[
+          "ID",
+          "Order Type",
+          "Customer",
+          "Staff",
+          "Discount Type",
+          "Value",
+          "Amount",
+          "Final Price",
+          "Payment",
+          "Paid",
+          "Change",
+          "Status",
+          "Created At",
+          "",
+        ].map((header) => (
+          <th key={header} className="p-3 text-left">
+            {header}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {orders.map((order) => (
+        <tr key={order.id} className="hover:bg-gray-700">
+          <td className="p-3">{order.id}</td>
+          <td className="p-3">{order.order_type}</td>
+          <td className="p-3">{order.customer_name || "N/A"}</td>
+          <td className="p-3">{order.staff_name || "N/A"}</td>
+          <td className="p-3">{order.discount_type || "None"}</td>
+          <td className="p-3">₱{order.discount_value || "0.00"}</td>
+          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+          <td className="p-3">₱{order.final_price}</td>
+          <td className="p-3">{order.payment_method}</td>
+          <td className="p-3">₱{order.amount_paid}</td>
+          <td className="p-3">₱{order.change}</td>
+          <td className="p-3">{order.status}</td>
+          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+          <td className="p-3">
+            <button
+              onClick={() => handleViewOrderDetails(order.id)}
+              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+            >
+              View
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
         {/* Modal for Order Details */}
         {selectedOrder && (
@@ -359,4 +360,4 @@ const ReadyOrders = ({ isOpen }) => { // Added isOpen prop
   );
 };
 
-export default ReadyOrders;
+export default CancelledOrders;
