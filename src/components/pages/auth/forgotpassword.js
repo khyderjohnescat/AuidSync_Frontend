@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react"; // ✅ Import back arrow icon
-import axiosInstance from "../../context/axiosInstance";
+import axiosInstance from "../../../context/axiosInstance";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
