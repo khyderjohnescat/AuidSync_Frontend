@@ -2,18 +2,18 @@ import { useState } from "react";
 import { useLocation, Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import React Query
 import useIdleTimeout from "./context/useIdleTimeout"; // Import the hook (adjust the path as needed)
-import Login from "./components/pages/Login";
+import Login from "./components/pages/auth/Login";
 import Dashboard from "./components/pages/staff/Staff_Dashboard";
 import POS from "./components/pages/staff/POS";
 import Settings from "./components/pages/settings/Settings";
 import Orderlist from "./components/pages/staff/Orderlist";
 import KitchenOrderlist from "./components/pages/kitchenstaff/KitchenOrderlist";
 import ProtectedRoute from "./components/services/ProtectedRoute";
-import Sidebar from "./components/parts/Sidebar";
+import Sidebar from "./components/componentparts/Sidebar";
 import Manageproduct from "./components/pages/staff/ManageProducts";
 import DeletedProducts from "./components/pages/staff/deletedProducts";
-import ForgotPassword from "./components/pages/forgotpassword";
-import ResetPassword from "./components/pages/resetPassword";
+import ForgotPassword from "./components/pages/auth/forgotpassword";
+import ResetPassword from "./components/pages/auth/resetPassword";
 import CompletedOrders from "./components/pages/staff/completedOrders";
 import CancelledOrders from "./components/pages/staff/cancelledOrders";
 import KitchenCompleteOrders from "./components/pages/kitchenstaff/kitchenCompleteOrders";
