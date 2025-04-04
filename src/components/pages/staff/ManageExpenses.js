@@ -22,9 +22,7 @@ function ExpenseManager() {
     tax_amount: "",
     invoice_number: "",
     notes: "",
-    status: "pending",
     payment_status: "pending",
-    date: "",
     payment_method: "cash",
     vendor: "",
     is_recurring: false,
@@ -120,9 +118,8 @@ function ExpenseManager() {
         tax_amount: formData.tax_amount ? parseFloat(formData.tax_amount) : 0,
         invoice_number: formData.invoice_number || null,
         notes: formData.notes || null,
-        status: formData.status,
+        status: "pending", // Always set to "pending" for staff
         payment_status: formData.payment_status,
-        date: formData.date,
         payment_method: formData.payment_method,
         vendor: formData.vendor || null,
         is_recurring: formData.is_recurring,
@@ -140,10 +137,6 @@ function ExpenseManager() {
       }
       if (isNaN(dataToSend.amount) || dataToSend.amount <= 0) {
         setError("Amount must be a positive number");
-        return;
-      }
-      if (!dataToSend.date) {
-        setError("Date is required");
         return;
       }
       if (
@@ -195,12 +188,6 @@ function ExpenseManager() {
   };
 
   const handleEdit = (expense) => {
-    const formatDate = (date) => {
-      if (!date) return "";
-      const d = new Date(date);
-      return d.toISOString().split("T")[0];
-    };
-
     setFormData({
       description: expense.description,
       amount: expense.amount.toString(),
@@ -208,9 +195,7 @@ function ExpenseManager() {
       tax_amount: expense.tax_amount ? expense.tax_amount.toString() : "",
       invoice_number: expense.invoice_number || "",
       notes: expense.notes || "",
-      status: expense.status,
       payment_status: expense.payment_status,
-      date: formatDate(expense.date),
       payment_method: expense.payment_method,
       vendor: expense.vendor || "",
       is_recurring: expense.is_recurring,
@@ -256,9 +241,7 @@ function ExpenseManager() {
       tax_amount: "",
       invoice_number: "",
       notes: "",
-      status: "pending",
       payment_status: "pending",
-      date: "",
       payment_method: "cash",
       vendor: "",
       is_recurring: false,
@@ -339,9 +322,7 @@ function ExpenseManager() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div
-              className="flex flex-col sm:flex-row gap-2 w-full sm:w-2/3"
-            >
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-2/3">
               <select
                 className="bg-gray-700 p-2 rounded text-white w-full sm:w-1/3 text-sm sm:text-base"
                 value={statusFilter}
@@ -395,7 +376,7 @@ function ExpenseManager() {
                       "Invoice Number",
                       "Status",
                       "Payment Status",
-                      "Date",
+                      "Created At",
                       "Payment Method",
                       "Vendor",
                       "Category",
@@ -474,7 +455,7 @@ function ExpenseManager() {
                           </span>
                         </td>
                         <td className="p-2 sm:p-3 text-xs sm:text-sm">
-                          {new Date(expense.date).toLocaleDateString()}
+                          {new Date(expense.created_at).toLocaleDateString()}
                         </td>
                         <td className="p-2 sm:p-3 text-xs sm:text-sm max-w-[100px] truncate">
                           {expense.payment_method
@@ -616,8 +597,8 @@ function ExpenseManager() {
                             expense.payment_status.slice(1)}
                         </span>
                       </div>
-                      <div className="font-semibold">Date:</div>
-                      <div>{new Date(expense.date).toLocaleDateString()}</div>
+                      <div className="font-semibold">Created At:</div>
+                      <div>{new Date(expense.created_at).toLocaleDateString()}</div>
                       <div className="font-semibold">Payment Method:</div>
                       <div>
                         {expense.payment_method
@@ -760,19 +741,6 @@ function ExpenseManager() {
                       </div>
                       <div>
                         <label className="block text-xs text-gray-300 mb-1">
-                          Date
-                        </label>
-                        <input
-                          type="date"
-                          name="date"
-                          value={formData.date}
-                          onChange={handleChange}
-                          required
-                          className="p-1 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-300 mb-1">
                           Category
                         </label>
                         <select
@@ -851,23 +819,7 @@ function ExpenseManager() {
                         />
                       </div>
 
-                      {/* Status and Vendor */}
-                      <div>
-                        <label className="block text-xs text-gray-300 mb-1">
-                          Status
-                        </label>
-                        <select
-                          name="status"
-                          value={formData.status}
-                          onChange={handleChange}
-                          required
-                          className="p-1 rounded bg-gray-700 w-full text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-xs"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                      </div>
+                      {/* Payment Status and Vendor */}
                       <div>
                         <label className="block text-xs text-gray-300 mb-1">
                           Payment Status
