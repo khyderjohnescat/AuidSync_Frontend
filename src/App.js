@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useLocation, Routes, Route,  BrowserRouter as Router  } from "react-router-dom";
+import { useLocation, Routes, Route, BrowserRouter as Router } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // Import React Query
 import useIdleTimeout from "./context/useIdleTimeout"; // Import the hook (adjust the path as needed)
 import Login from "./components/pages/Login";
 import Dashboard from "./components/pages/staff/Staff_Dashboard";
@@ -20,22 +21,23 @@ import CategoryManager from "./components/pages/staff/ManageCategories";
 import DiscountManager from "./components/pages/staff/ManageDiscounts";
 import AccountSecurity from "./components/pages/settings/AccountSecurity";
 import AccountProfile from "./components/pages/settings/AccountProfile";
+import ExpenseManager from "./components/pages/staff/ManageExpenses";
+import ExpenseCategories from "./components/pages/staff/expensesCategory";
 import { AuthProvider } from "./context/AuthContext";
+
+const queryClient = new QueryClient(); // Create QueryClient instance
 
 function Layout() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Define whether to disable the idle timeout
   const hideIdleTimeout =
     location.pathname === "/" ||
     location.pathname === "/forgot-password" ||
     location.pathname === "/reset-password";
 
-  // Call the hook unconditionally and control its effect inside the hook
   useIdleTimeout(hideIdleTimeout ? Infinity : 1 * 60 * 60 * 1000);
 
-  // Hide sidebar when on login or password reset pages
   const hideSidebar = hideIdleTimeout;
 
   return (
@@ -60,6 +62,8 @@ function Layout() {
           <Route path="/settings" element={<ProtectedRoute><Settings isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/account-profile" element={<ProtectedRoute><AccountProfile isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/account-security" element={<ProtectedRoute><AccountSecurity isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/manageexpenses" element={<ProtectedRoute><ExpenseManager isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/expensescategory" element={<ProtectedRoute><ExpenseCategories isOpen={isOpen} /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>
@@ -69,9 +73,11 @@ function Layout() {
 function App() {
   return (
     <Router> 
-      <AuthProvider>
-        <Layout />
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}> {/* Wrap with QueryClientProvider */}
+        <AuthProvider>
+          <Layout />
+        </AuthProvider>
+      </QueryClientProvider>
     </Router>
   );
 }
