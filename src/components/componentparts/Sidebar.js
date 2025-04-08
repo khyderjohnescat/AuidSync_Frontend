@@ -1,7 +1,11 @@
 import { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaUtensils } from "react-icons/fa";
+<<<<<<< HEAD
 import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney, MdCategory, MdDashboard } from "react-icons/md";
+=======
+import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney } from "react-icons/md";
+>>>>>>> a77c21bcd594fe5c44df05bedff5793082845bae
 import { HiOutlineClipboardList } from "react-icons/hi";
 import { IoSettingsOutline, IoLogOutOutline } from "react-icons/io5";
 import AuthContext from "../../context/AuthContext";
@@ -35,8 +39,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/kitchenorderlist" icon={<FaUtensils />} text="Orders (Kitchen)" isOpen={isOpen} location={location} />
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
           <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
+<<<<<<< HEAD
           <NavItem to="/expensescategory" icon={<MdCategory />} text="Expenses Category" isOpen={isOpen} location={location} />
           <NavItem to="/admindashboard" icon={<MdDashboard />} text="Admin Dashboard" isOpen={isOpen} location={location} />
+=======
+>>>>>>> a77c21bcd594fe5c44df05bedff5793082845bae
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
