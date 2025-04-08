@@ -3,9 +3,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftCircle } from "lucide-react";
+import { ArrowLeftCircle, MenuSquare } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { MdCategory, MdOutlineCategory } from "react-icons/md";
 
 function ExpenseManager() {
   const navigate = useNavigate();
@@ -270,6 +271,14 @@ function ExpenseManager() {
                 <ArrowLeftCircle className="mr-1 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" />{" "}
                 Back
               </button>
+              <div className="justify-end flex gap-2">
+              <button
+                onClick={() => navigate("/expensescategory")}
+                className="bg-blue-500 px-3 py-1 sm:px-4 sm:py-2 rounded flex items-center text-sm sm:text-base"
+              >
+                <MenuSquare className="mr-1 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" />{" "}
+                Add Category
+              </button>
               <button
                 onClick={openModal}
                 className="bg-green-500 px-3 py-1 sm:px-4 sm:py-2 rounded flex items-center text-sm sm:text-base"
@@ -277,6 +286,7 @@ function ExpenseManager() {
                 <FaPlus className="mr-1 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" /> Add
                 Expense
               </button>
+              </div>
             </div>
           </div>
 
