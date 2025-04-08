@@ -32,34 +32,37 @@ function ExpenseManager() {
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5); // Number of items per page
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch Expenses
+  // Fetch Expenses with Pagination
   const fetchExpenses = useCallback(async () => {
     try {
-      const params = {};
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
       if (statusFilter) params.status = statusFilter;
       if (paymentStatusFilter) params.payment_status = paymentStatusFilter;
       if (categoryFilter) params.category_id = categoryFilter;
 
       const response = await axiosInstance.get("/expenses", { params });
-      setExpenses(Array.isArray(response.data) ? response.data : []);
-      setCurrentPage(1); // Reset to first page when expenses are fetched
+      const { data, pagination } = response.data;
+      setExpenses(Array.isArray(data) ? data : []);
+      setTotalPages(pagination?.totalPages || 1);
     } catch (error) {
-      console.error(
-        "Error fetching expenses:",
-        error.response?.data || error.message
-      );
+      console.error("Error fetching expenses:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Failed to fetch expenses", {
         position: "top-center",
         autoClose: 3000,
       });
       setExpenses([]);
+      setTotalPages(1);
     }
-  }, [statusFilter, paymentStatusFilter, categoryFilter]);
+  }, [currentPage, itemsPerPage, statusFilter, paymentStatusFilter, categoryFilter]);
 
   // Fetch Categories
   const fetchCategories = useCallback(async () => {
@@ -68,7 +71,6 @@ function ExpenseManager() {
       const data = Array.isArray(response.data.categories)
         ? response.data.categories
         : [];
-      console.log("Categories response:", response.data);
       setCategories(data);
 
       if (data.length > 0 && !formData.category_id && !editingId) {
@@ -78,17 +80,11 @@ function ExpenseManager() {
         }));
       }
     } catch (error) {
-      console.error(
-        "Error fetching categories:",
-        error.response?.data || error.message
-      );
-      toast.error(
-        error.response?.data?.message || "Failed to fetch categories",
-        {
-          position: "top-center",
-          autoClose: 3000,
-        }
-      );
+      console.error("Error fetching categories:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to fetch categories", {
+        position: "top-center",
+        autoClose: 3000,
+      });
       setCategories([]);
     }
   }, [formData.category_id, editingId]);
@@ -123,12 +119,8 @@ function ExpenseManager() {
         payment_method: formData.payment_method,
         vendor: formData.vendor || null,
         is_recurring: formData.is_recurring,
-        recurrence_interval: formData.is_recurring
-          ? formData.recurrence_interval
-          : null,
-        category_id: formData.category_id
-          ? parseInt(formData.category_id)
-          : null,
+        recurrence_interval: formData.is_recurring ? formData.recurrence_interval : null,
+        category_id: formData.category_id ? parseInt(formData.category_id) : null,
       };
 
       if (!dataToSend.description) {
@@ -139,27 +131,18 @@ function ExpenseManager() {
         setError("Amount must be a positive number");
         return;
       }
-      if (
-        dataToSend.quantity &&
-        (isNaN(dataToSend.quantity) || dataToSend.quantity <= 0)
-      ) {
+      if (dataToSend.quantity && (isNaN(dataToSend.quantity) || dataToSend.quantity <= 0)) {
         setError("Quantity must be a positive integer");
         return;
       }
-      if (
-        dataToSend.tax_amount &&
-        (isNaN(dataToSend.tax_amount) || dataToSend.tax_amount < 0)
-      ) {
+      if (dataToSend.tax_amount && (isNaN(dataToSend.tax_amount) || dataToSend.tax_amount < 0)) {
         setError("Tax amount must be a non-negative number");
         return;
       }
 
       let response;
       if (editingId) {
-        response = await axiosInstance.put(
-          `/expenses/${editingId}`,
-          dataToSend
-        );
+        response = await axiosInstance.put(`/expenses/${editingId}`, dataToSend);
         toast.success(response.data.message || "Expense updated successfully", {
           position: "top-center",
           autoClose: 3000,
@@ -172,14 +155,12 @@ function ExpenseManager() {
         });
       }
 
+      setCurrentPage(1); // Reset to first page after submission
       await fetchExpenses();
       closeModal();
     } catch (error) {
       setError(error.response?.data?.message || "Error submitting expense");
-      console.error(
-        "Error submitting expense:",
-        error.response?.data || error.message
-      );
+      console.error("Error submitting expense:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Failed to submit expense", {
         position: "top-center",
         autoClose: 3000,
@@ -211,23 +192,18 @@ function ExpenseManager() {
     if (window.confirm("Are you sure you want to delete this expense?")) {
       try {
         const response = await axiosInstance.delete(`/expenses/${id}`);
+        setCurrentPage(1); // Reset to first page after deletion
         await fetchExpenses();
         toast.success(response.data.message || "Expense deleted successfully", {
           position: "top-center",
           autoClose: 3000,
         });
       } catch (error) {
-        console.error(
-          "Error deleting expense:",
-          error.response?.data || error.message
-        );
-        toast.error(
-          error.response?.data?.message || "Failed to delete expense",
-          {
-            position: "top-center",
-            autoClose: 3000,
-          }
-        );
+        console.error("Error deleting expense:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Failed to delete expense", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       }
     }
   };
@@ -258,6 +234,7 @@ function ExpenseManager() {
     setError("");
   };
 
+  // Client-side search filtering
   const filteredExpenses = Array.isArray(expenses)
     ? expenses.filter((expense) => {
         const searchLower = search.toLowerCase();
@@ -268,13 +245,6 @@ function ExpenseManager() {
         );
       })
     : [];
-
-  // Pagination Logic
-  const totalItems = filteredExpenses.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentExpenses = filteredExpenses.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -393,7 +363,7 @@ function ExpenseManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentExpenses.length === 0 ? (
+                  {filteredExpenses.length === 0 ? (
                     <tr>
                       <td
                         colSpan="15"
@@ -403,7 +373,7 @@ function ExpenseManager() {
                       </td>
                     </tr>
                   ) : (
-                    currentExpenses.map((expense) => (
+                    filteredExpenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-gray-700">
                         <td className="p-2 sm:p-3 text-xs sm:text-sm">
                           {expense.id}
@@ -542,12 +512,12 @@ function ExpenseManager() {
 
             {/* Card layout for smaller screens */}
             <div className="block sm:hidden space-y-4">
-              {currentExpenses.length === 0 ? (
+              {filteredExpenses.length === 0 ? (
                 <div className="p-3 text-center text-gray-400 text-sm">
                   No expenses found.
                 </div>
               ) : (
-                currentExpenses.map((expense) => (
+                filteredExpenses.map((expense) => (
                   <div
                     key={expense.id}
                     className="bg-gray-700 p-3 rounded-lg shadow"
