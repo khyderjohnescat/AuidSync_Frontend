@@ -23,6 +23,7 @@ import AccountSecurity from "./components/pages/settings/AccountSecurity";
 import AccountProfile from "./components/pages/settings/AccountProfile";
 import ExpenseManager from "./components/pages/staff/ManageExpenses";
 import ExpenseCategories from "./components/pages/staff/expensesCategory";
+import AnalyticsDashboard from "./components/pages/admin/adminDashboard";
 import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient(); // Create QueryClient instance
@@ -64,6 +65,7 @@ function Layout() {
           <Route path="/account-security" element={<ProtectedRoute><AccountSecurity isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/manageexpenses" element={<ProtectedRoute><ExpenseManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/expensescategory" element={<ProtectedRoute><ExpenseCategories isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/admindashboard" element={<ProtectedRoute><AnalyticsDashboard isOpen={isOpen} /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>
