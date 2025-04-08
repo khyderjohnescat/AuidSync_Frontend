@@ -230,12 +230,13 @@ const POS = () => {
   };
 
   return (
-    <div className="grid grid-cols-3 bg-gray-800 gap-2 flex flex-col h-screen p-2 bg-gray-950 text-white">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-screen p-2 bg-gray-950 text-white bg-gray-800">
       {/* Product List */}
-      <div className="col-span-2 flex flex-col min-h-full bg-gray-900 p-5 rounded-lg shadow-lg h-auto">
+      <div className="md:col-span-2 flex flex-col min-h-0 bg-gray-900 p-5 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
-        <div className="flex gap-4 mb-4">
+        {/* Search and Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="relative w-full">
             <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
             <input
@@ -247,7 +248,7 @@ const POS = () => {
             />
           </div>
           <select
-            className="bg-gray-800 p-2 rounded-lg"
+            className="bg-gray-800 p-2 rounded-lg w-full md:w-auto"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
@@ -259,9 +260,10 @@ const POS = () => {
             ))}
           </select>
         </div>
-        {/* Scrollable container */}
+
+        {/* Product Grid */}
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {filteredProducts.map((product) => {
               const activeDiscount = getActiveDiscount(product);
               const displayPrice = activeDiscount
@@ -322,11 +324,11 @@ const POS = () => {
       </div>
 
       {/* Cart */}
-      <div className="col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
+      <div className="flex flex-col min-h-0 bg-gray-900 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Cart</h2>
 
-        {/* Cart Items */}
-        <div className="max-h-64 overflow-y-auto space-y-2 mb-8">
+        {/* Cart Items Scrollable */}
+        <div className="flex-1 overflow-y-auto space-y-2 mb-4">
           {cart.length === 0 ? (
             <p className="text-gray-400 text-center">Your cart is empty.</p>
           ) : (
@@ -372,8 +374,8 @@ const POS = () => {
           )}
         </div>
 
-        {/* Summary and Other Elements (Always Visible) */}
-        <>
+        {/* Summary + Checkout */}
+        <div className="mt-auto">
           {/* Discount Inputs */}
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2">
@@ -468,7 +470,7 @@ const POS = () => {
               ? "Processing..."
               : `Place Order - ₱${finalPrice.toFixed(2)}`}
           </button>
-        </>
+        </div>
       </div>
 
       <ToastContainer />
