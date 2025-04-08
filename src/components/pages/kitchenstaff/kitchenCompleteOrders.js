@@ -242,7 +242,7 @@ const CompletedOrders = ({ isOpen }) => {
       <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
         <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Kitchen Orders</h2>
         <button
-          onClick={() => navigate("/KitchenOrderlist")}
+          onClick={() => navigate("/kitchenorderlist")}
           className="bg-blue-500 px-4 py-2 rounded flex items-center"
         >
           <ArrowLeftCircle className="mr-2" /> Back
@@ -318,9 +318,9 @@ const CompletedOrders = ({ isOpen }) => {
                     "Status",
                     "Kitchen Status",
                     "Created At",
-                    "",
+                    "Action",
                   ].map((header) => (
-                    <th key={header} className="p-3 text-left">
+                    <th key={header} className="p-2 text-left">
                       {header}
                     </th>
                   ))}
@@ -330,21 +330,21 @@ const CompletedOrders = ({ isOpen }) => {
                 {orders.length > 0 ? (
                   orders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-700">
-                      <td className="p-3">{order.id}</td>
-                      <td className="p-3">{order.order_type}</td>
-                      <td className="p-3">{order.customer_name || "N/A"}</td>
-                      <td className="p-3">{order.staff_name || "N/A"}</td>
-                      <td className="p-3">{order.discount_type || "None"}</td>
-                      <td className="p-3">₱{order.discount_value || "0.00"}</td>
-                      <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-                      <td className="p-3">₱{order.final_price}</td>
-                      <td className="p-3">{order.payment_method}</td>
-                      <td className="p-3">₱{order.amount_paid}</td>
-                      <td className="p-3">₱{order.change}</td>
-                      <td className="p-3">{order.status}</td>
-                      <td className="p-3">{order.kitchenStatus}</td>
-                      <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-                      <td className="p-3">
+                      <td className="p-2">{order.id}</td>
+                      <td className="p-2">{order.order_type}</td>
+                      <td className="p-2">{order.customer_name || "N/A"}</td>
+                      <td className="p-2">{order.staff_name || "N/A"}</td>
+                      <td className="p-2">{order.discount_type || "None"}</td>
+                      <td className="p-2">₱{order.discount_value || "0.00"}</td>
+                      <td className="p-2">₱{order.discount_amount || "0.00"}</td>
+                      <td className="p-2">₱{order.final_price}</td>
+                      <td className="p-2">{order.payment_method}</td>
+                      <td className="p-2">₱{order.amount_paid}</td>
+                      <td className="p-2">₱{order.change}</td>
+                      <td className="p-2">{order.status}</td>
+                      <td className="p-2">{order.kitchenStatus}</td>
+                      <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+                      <td className="p-2">
                         <button
                           onClick={() => handleViewOrderDetails(order.id)}
                           className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
@@ -356,7 +356,7 @@ const CompletedOrders = ({ isOpen }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={15} className="p-3 text-center text-gray-400">
+                    <td colSpan={15} className="p-2 text-center text-gray-400">
                       No completed kitchen orders found
                     </td>
                   </tr>

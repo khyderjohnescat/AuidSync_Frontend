@@ -312,7 +312,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
           "Created At",
           "",
         ].map((header) => (
-          <th key={header} className="p-3 text-left">
+          <th key={header} className="p-2 text-left">
             {header}
           </th>
         ))}
@@ -321,20 +321,20 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
     <tbody>
       {orders.map((order) => (
         <tr key={order.id} className="hover:bg-gray-700">
-          <td className="p-3">{order.id}</td>
-          <td className="p-3">{order.order_type}</td>
-          <td className="p-3">{order.customer_name || "N/A"}</td>
-          <td className="p-3">{order.staff_name || "N/A"}</td>
-          <td className="p-3">{order.discount_type || "None"}</td>
-          <td className="p-3">₱{order.discount_value || "0.00"}</td>
-          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-          <td className="p-3">₱{order.final_price}</td>
-          <td className="p-3">{order.payment_method}</td>
-          <td className="p-3">₱{order.amount_paid}</td>
-          <td className="p-3">₱{order.change}</td>
-          <td className="p-3">{order.status}</td>
-          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-          <td className="p-3">
+          <td className="p-2">{order.id}</td>
+          <td className="p-2">{order.order_type}</td>
+          <td className="p-2">{order.customer_name || "N/A"}</td>
+          <td className="p-2">{order.staff_name || "N/A"}</td>
+          <td className="p-2">{order.discount_type || "None"}</td>
+          <td className="p-2">₱{order.discount_value || "0.00"}</td>
+          <td className="p-2">₱{order.discount_amount || "0.00"}</td>
+          <td className="p-2">₱{order.final_price}</td>
+          <td className="p-2">{order.payment_method}</td>
+          <td className="p-2">₱{order.amount_paid}</td>
+          <td className="p-2">₱{order.change}</td>
+          <td className="p-2">{order.status}</td>
+          <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+          <td className="p-2">
             <button
               onClick={() => handleViewOrderDetails(order.id)}
               className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"

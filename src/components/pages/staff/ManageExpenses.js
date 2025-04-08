@@ -342,7 +342,7 @@ function ExpenseManager() {
           {/* Expenses Table */}
           <div className="bg-gray-800 shadow-md rounded-md">
             {/* Table for larger screens */}
-            <div className="hidden sm:block overflow-x-hidden">
+            <div className="hidden sm:block overflow-x-hidden rounded-md">
               <table className="w-full table-auto text-sm">
                 <thead className="bg-gray-700 text-white">
                   <tr>
@@ -365,7 +365,7 @@ function ExpenseManager() {
                     ].map((header) => (
                       <th
                         key={header}
-                        className="p-2 sm:p-3 text-left text-xs sm:text-sm whitespace-nowrap"
+                        className="p-3 sm:p-3 text-left text-xs sm:text-sm whitespace-nowrap"
                       >
                         {header}
                       </th>
