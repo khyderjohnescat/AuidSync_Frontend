@@ -2,13 +2,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../../context/axiosInstance";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
-import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircle } from "lucide-react";
 
-
-const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
+const CompletedOrders = ({ isOpen }) => {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true); // Only for initial load
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const navigate = useNavigate();
@@ -21,48 +20,51 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   });
 
   // Debounce filters
-  const debouncedFilters = useMemo(() => {
+  const debouncedFetchOrders = useMemo(() => {
+    let timeoutId;
     return () => {
-      const handler = setTimeout(() => {
-        fetchOrders();
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchOrders(false); // Pass false to skip loading state
       }, 500);
-      return () => clearTimeout(handler);
     };
   }, [filters]);
 
   useEffect(() => {
-    const cancel = debouncedFilters();
-    fetchOrders(); // Initial fetch
+    fetchOrders(true); // Initial fetch with loading state
 
     // Set up polling to refresh every 500ms
     const pollingInterval = setInterval(() => {
-      fetchOrders();
+      fetchOrders(false); // Polling without loading state
     }, 500);
 
     // Cleanup on unmount
     return () => {
-      cancel();
       clearInterval(pollingInterval);
     };
-  }, [debouncedFilters]);
+  }, []); // Empty dependency array for initial fetch and polling
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  useEffect(() => {
+    debouncedFetchOrders(); // Fetch when filters change (debounced)
+  }, [filters]);
+
+  const fetchOrders = async (showLoading = false) => {
+    if (showLoading) setInitialLoading(true); // Only set loading on initial fetch
     setError(null);
 
     try {
       const response = await axiosInstance.get("/orders", {
         params: {
           ...filters,
-          status: "completed", // Only fetch completed orders
+          kitchenStatus: "completed", // Only fetch orders with kitchenStatus: "completed"
         },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      setError("Failed to fetch completed orders");
+      setError("Failed to fetch completed kitchen orders");
     } finally {
-      setLoading(false);
+      if (showLoading) setInitialLoading(false); // Only clear loading on initial fetch
     }
   };
 
@@ -81,7 +83,6 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
       date: "",
       payment_method: "",
     });
-    fetchOrders();
   };
 
   const handleViewOrderDetails = async (orderId) => {
@@ -127,8 +128,6 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
       if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
-    
-
     return (
       <div
         className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
@@ -146,7 +145,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
 
           <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-            Completed Order Details
+            Completed Kitchen Order Details
           </h2>
 
           <div className="flex gap-6">
@@ -173,10 +172,11 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${currentPage === 1
+                      className={`px-2 py-1 rounded ${
+                        currentPage === 1
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                        }`}
+                      }`}
                     >
                       Previous
                     </button>
@@ -186,10 +186,11 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handleNext}
                       disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${currentPage === totalPages
+                      className={`px-2 py-1 rounded ${
+                        currentPage === totalPages
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                        }`}
+                      }`}
                     >
                       Next
                     </button>
@@ -222,6 +223,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
                 <div>
                   <p><span className="font-semibold">Change:</span> ₱{selectedOrder.change}</p>
                   <p><span className="font-semibold">Status:</span> {selectedOrder.status}</p>
+                  <p><span className="font-semibold">Kitchen Status:</span> {selectedOrder.kitchenStatus}</p>
                   <p>
                     <span className="font-semibold">Created At:</span>{" "}
                     {new Date(selectedOrder.created_at).toLocaleString()}
@@ -238,7 +240,7 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
       <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
-        <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Orders</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Kitchen Orders</h2>
         <button
           onClick={() => navigate("/KitchenOrderlist")}
           className="bg-blue-500 px-4 py-2 rounded flex items-center"
@@ -292,62 +294,77 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
         </div>
 
         {/* Table Section */}
-{error && <div className="text-center text-red-500">{error}</div>}
-<div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4"> {/* Add overflow-x-auto for horizontal scrolling */}
-  <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
-    <thead className="bg-gray-700 text-white">
-      <tr>
-        {[
-          "ID",
-          "Order Type",
-          "Customer",
-          "Staff",
-          "Discount Type",
-          "Value",
-          "Amount",
-          "Final Price",
-          "Payment",
-          "Paid",
-          "Change",
-          "Status",
-          "Created At",
-          "",
-        ].map((header) => (
-          <th key={header} className="p-3 text-left">
-            {header}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {orders.map((order) => (
-        <tr key={order.id} className="hover:bg-gray-700">
-          <td className="p-3">{order.id}</td>
-          <td className="p-3">{order.order_type}</td>
-          <td className="p-3">{order.customer_name || "N/A"}</td>
-          <td className="p-3">{order.staff_name || "N/A"}</td>
-          <td className="p-3">{order.discount_type || "None"}</td>
-          <td className="p-3">₱{order.discount_value || "0.00"}</td>
-          <td className="p-3">₱{order.discount_amount || "0.00"}</td>
-          <td className="p-3">₱{order.final_price}</td>
-          <td className="p-3">{order.payment_method}</td>
-          <td className="p-3">₱{order.amount_paid}</td>
-          <td className="p-3">₱{order.change}</td>
-          <td className="p-3">{order.status}</td>
-          <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
-          <td className="p-3">
-            <button
-              onClick={() => handleViewOrderDetails(order.id)}
-              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-            >
-              View
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+        {initialLoading ? (
+          <div className="text-center text-gray-400 mt-4">Loading...</div>
+        ) : error ? (
+          <div className="text-center text-red-500 mt-4">{error}</div>
+        ) : (
+          <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4">
+            <table className="min-w-full table-auto text-base">
+              <thead className="bg-gray-700 text-white">
+                <tr>
+                  {[
+                    "ID",
+                    "Order Type",
+                    "Customer",
+                    "Staff",
+                    "Discount Type",
+                    "Value",
+                    "Amount",
+                    "Final Price",
+                    "Payment",
+                    "Paid",
+                    "Change",
+                    "Status",
+                    "Kitchen Status",
+                    "Created At",
+                    "",
+                  ].map((header) => (
+                    <th key={header} className="p-3 text-left">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orders.length > 0 ? (
+                  orders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-700">
+                      <td className="p-3">{order.id}</td>
+                      <td className="p-3">{order.order_type}</td>
+                      <td className="p-3">{order.customer_name || "N/A"}</td>
+                      <td className="p-3">{order.staff_name || "N/A"}</td>
+                      <td className="p-3">{order.discount_type || "None"}</td>
+                      <td className="p-3">₱{order.discount_value || "0.00"}</td>
+                      <td className="p-3">₱{order.discount_amount || "0.00"}</td>
+                      <td className="p-3">₱{order.final_price}</td>
+                      <td className="p-3">{order.payment_method}</td>
+                      <td className="p-3">₱{order.amount_paid}</td>
+                      <td className="p-3">₱{order.change}</td>
+                      <td className="p-3">{order.status}</td>
+                      <td className="p-3">{order.kitchenStatus}</td>
+                      <td className="p-3">{new Date(order.created_at).toLocaleString()}</td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => handleViewOrderDetails(order.id)}
+                          className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={15} className="p-3 text-center text-gray-400">
+                      No completed kitchen orders found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Modal for Order Details */}
         {selectedOrder && (
