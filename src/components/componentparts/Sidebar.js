@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaUtensils } from "react-icons/fa";
-import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney, MdCategory } from "react-icons/md";
+import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney } from "react-icons/md";
 import { HiOutlineClipboardList } from "react-icons/hi";
 import { IoSettingsOutline, IoLogOutOutline } from "react-icons/io5";
 import AuthContext from "../../context/AuthContext";
@@ -35,7 +35,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/kitchenorderlist" icon={<FaUtensils />} text="Orders (Kitchen)" isOpen={isOpen} location={location} />
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
           <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
-          <NavItem to="/expensescategory" icon={<MdCategory />} text="Expenses Category" isOpen={isOpen} location={location} />
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
