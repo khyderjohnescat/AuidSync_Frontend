@@ -195,7 +195,7 @@ function AnalyticsDashboard() {
       <div className="max-w-7xl mx-auto bg-gray-900 p-6 rounded-lg shadow-md">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-          <h2 className="text-3xl font-semibold text-white">Accounting Dashboard</h2>
+          <h2 className="text-3xl font-semibold text-white">Dashboard</h2>
           <div className="flex gap-4 mt-4 sm:mt-0">
             <button
               onClick={() => navigate("/dashboard")}
