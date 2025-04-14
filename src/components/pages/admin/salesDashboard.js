@@ -169,12 +169,6 @@ function SalesDashboard() {
             <p className="text-2xl font-bold">{formatNumber(orderTypeBreakdown.take_out)}</p>
           </div>
 
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-lg mb-2 flex items-center">
-              <span className="mr-2">🚀</span> Delivery
-            </h3>
-            <p className="text-2xl font-bold">{formatNumber(orderTypeBreakdown.delivery)}</p>
-          </div>
         </div>
 
         {/* Average Daily Sales and Total Sales This Month */}
