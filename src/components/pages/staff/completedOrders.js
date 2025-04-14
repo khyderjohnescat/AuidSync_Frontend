@@ -5,7 +5,6 @@ import axiosInstance from "../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
 
-
 const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,12 +12,30 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
   const [selectedOrder, setSelectedOrder] = useState(null);
   const navigate = useNavigate();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7; // Number of items per page
+
   const [filters, setFilters] = useState({
     search: "",
     order_type: "",
     date: "",
     payment_method: "",
   });
+
+  // Calculate paginated orders
+  const totalOrders = orders.length;
+  const totalPages = Math.ceil(totalOrders / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
 
   // Debounce filters
   const debouncedFilters = useMemo(() => {
@@ -126,8 +143,6 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
     const handleNext = () => {
       if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
-
-    
 
     return (
       <div
@@ -292,62 +307,91 @@ const CompletedOrders = ({ isOpen }) => { // Added isOpen prop
         </div>
 
         {/* Table Section */}
-{error && <div className="text-center text-red-500">{error}</div>}
-<div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4"> {/* Add overflow-x-auto for horizontal scrolling */}
-  <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
-    <thead className="bg-gray-700 text-white">
-      <tr>
-        {[
-          "ID",
-          "Order Type",
-          "Customer",
-          "Staff",
-          "Discount Type",
-          "Value",
-          "Amount",
-          "Final Price",
-          "Payment",
-          "Paid",
-          "Change",
-          "Status",
-          "Created At",
-          "",
-        ].map((header) => (
-          <th key={header} className="p-2 text-left">
-            {header}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {orders.map((order) => (
-        <tr key={order.id} className="hover:bg-gray-700">
-          <td className="p-2">{order.id}</td>
-          <td className="p-2">{order.order_type}</td>
-          <td className="p-2">{order.customer_name || "N/A"}</td>
-          <td className="p-2">{order.staff_name || "N/A"}</td>
-          <td className="p-2">{order.discount_type || "None"}</td>
-          <td className="p-2">₱{order.discount_value || "0.00"}</td>
-          <td className="p-2">₱{order.discount_amount || "0.00"}</td>
-          <td className="p-2">₱{order.final_price}</td>
-          <td className="p-2">{order.payment_method}</td>
-          <td className="p-2">₱{order.amount_paid}</td>
-          <td className="p-2">₱{order.change}</td>
-          <td className="p-2">{order.status}</td>
-          <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
-          <td className="p-2">
-            <button
-              onClick={() => handleViewOrderDetails(order.id)}
-              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-            >
-              View
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+        {error && <div className="text-center text-red-500">{error}</div>}
+        <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4"> {/* Add overflow-x-auto for horizontal scrolling */}
+          <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
+            <thead className="bg-gray-700 text-white">
+              <tr>
+                {[
+                  "ID",
+                  "Order Type",
+                  "Customer",
+                  "Staff",
+                  "Discount Type",
+                  "Value",
+                  "Amount",
+                  "Final Price",
+                  "Payment",
+                  "Paid",
+                  "Change",
+                  "Status",
+                  "Created At",
+                  "",
+                ].map((header) => (
+                  <th key={header} className="p-2 text-left">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedOrders.map((order) => (
+                <tr key={order.id} className="hover:bg-gray-700">
+                  <td className="p-2">{order.id}</td>
+                  <td className="p-2">{order.order_type}</td>
+                  <td className="p-2">{order.customer_name || "N/A"}</td>
+                  <td className="p-2">{order.staff_name || "N/A"}</td>
+                  <td className="p-2">{order.discount_type || "None"}</td>
+                  <td className="p-2">₱{order.discount_value || "0.00"}</td>
+                  <td className="p-2">₱{order.discount_amount || "0.00"}</td>
+                  <td className="p-2">₱{order.final_price}</td>
+                  <td className="p-2">{order.payment_method}</td>
+                  <td className="p-2">₱{order.amount_paid}</td>
+                  <td className="p-2">₱{order.change}</td>
+                  <td className="p-2">{order.status}</td>
+                  <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+                  <td className="p-2">
+                    <button
+                      onClick={() => handleViewOrderDetails(order.id)}
+                      className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded ${
+              currentPage === 1
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-400"
+            }`}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded ${
+              currentPage === totalPages
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-400"
+            }`}
+          >
+            Next
+          </button>
+        </div>
 
         {/* Modal for Order Details */}
         {selectedOrder && (

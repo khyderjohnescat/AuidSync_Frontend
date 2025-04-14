@@ -12,7 +12,9 @@ const OrderList = ({ isOpen }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [statusModalOrderId, setStatusModalOrderId] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // Move currentPage here
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7; // Number of items per page
 
   const [filters, setFilters] = useState({
     search: "",
@@ -20,6 +22,21 @@ const OrderList = ({ isOpen }) => {
     date: "",
     payment_method: "",
   });
+
+  // Calculate paginated orders
+  const totalOrders = orders.length;
+  const totalPages = Math.ceil(totalOrders / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
 
   const debouncedFilters = useMemo(() => {
     let timeoutId;
@@ -471,7 +488,7 @@ const OrderList = ({ isOpen }) => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-700">
                     <td className="p-2">{order.id}</td>
                     <td className="p-2">{order.order_type}</td>
@@ -509,6 +526,35 @@ const OrderList = ({ isOpen }) => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded ${
+              currentPage === 1
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-400"
+            }`}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded ${
+              currentPage === totalPages
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-400"
+            }`}
+          >
+            Next
+          </button>
         </div>
 
         {selectedOrder && (

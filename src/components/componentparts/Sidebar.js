@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBars, FaUtensils } from "react-icons/fa";
-import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney, MdDashboard } from "react-icons/md";
+import { MdSpaceDashboard, MdRestaurantMenu, MdInventory, MdMoney, MdDashboard, MdWork } from "react-icons/md";
 import { HiOutlineClipboardList } from "react-icons/hi";
 import { IoSettingsOutline, IoLogOutOutline } from "react-icons/io5";
 import AuthContext from "../../context/AuthContext";
@@ -36,9 +36,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
           <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
           <NavItem to="/admindashboard" icon={<MdDashboard />} text="Admin Dashboard" isOpen={isOpen} location={location} />
+
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
+          <NavItem to="/helpsupport" icon={<MdWork />} text="Help & Support" isOpen={isOpen} location={location} />
           <NavItem to="/settings" icon={<IoSettingsOutline />} text="Settings" isOpen={isOpen} location={location} />
           <button onClick={handleLogoutClick} className="flex items-center gap-2 hover:text-red-400 hover:bg-gray-800 p-2 rounded-md">
             <IoLogOutOutline /> {isOpen && "Logout"}
