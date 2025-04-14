@@ -24,6 +24,10 @@ import AccountProfile from "./components/pages/settings/AccountProfile";
 import ExpenseManager from "./components/pages/staff/ManageExpenses";
 import ExpenseCategories from "./components/pages/staff/expensesCategory";
 import AnalyticsDashboard from "./components/pages/admin/adminDashboard";
+import SalesDashboard from "./components/pages/admin/salesDashboard";
+import ProfitsDashboard from "./components/pages/admin/profitsDashboard";
+import OrdersDashboard from "./components/pages/admin/ordersDashboard";
+import ExpensesDashboard from "./components/pages/admin/expensesDashboard";
 import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient(); // Create QueryClient instance
@@ -66,6 +70,10 @@ function Layout() {
           <Route path="/manageexpenses" element={<ProtectedRoute><ExpenseManager isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/expensescategory" element={<ProtectedRoute><ExpenseCategories isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/admindashboard" element={<ProtectedRoute><AnalyticsDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/sales-dashboard" element={<ProtectedRoute><SalesDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/orders-dashboard" element={<ProtectedRoute><OrdersDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/profits-dashboard" element={<ProtectedRoute><ProfitsDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/expenses-dashboard" element={<ProtectedRoute><ExpensesDashboard isOpen={isOpen} /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>
