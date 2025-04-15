@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
-import { FaFilter, FaTimes, FaArrowLeft } from "react-icons/fa";
+import { FaFilter, FaTimes} from "react-icons/fa";
 import axiosInstance from "../../../../context/axiosInstance";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
@@ -11,7 +11,6 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function AnalyticsDashboard() {
-  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const [overviewData, setOverviewData] = useState({
     total_sales: "0.00",
@@ -175,13 +174,6 @@ function AnalyticsDashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <h2 className="text-3xl font-semibold text-white">Staff Dashboard</h2>
           <div className="flex gap-4 mt-4 sm:mt-0">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center transition duration-200"
-              aria-label="Back to dashboard"
-            >
-              <FaArrowLeft className="mr-2 w-5 h-5" /> Back
-            </button>
             <button
               onClick={() => setIsFilterModalOpen(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center transition duration-200"
