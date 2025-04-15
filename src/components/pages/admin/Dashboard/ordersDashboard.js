@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

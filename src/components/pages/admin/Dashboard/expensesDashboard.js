@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { FaUtensils, FaLightbulb, FaCoffee, FaTools, FaQuestion } from "react-icons/fa";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);

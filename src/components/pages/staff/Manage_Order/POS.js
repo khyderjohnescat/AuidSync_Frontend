@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaShoppingCart, FaTrash, FaTag } from "react-icons/fa";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";

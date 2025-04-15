@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { CheckCircle, CheckCircle2, CheckCircle2Icon, XCircle } from "lucide-react";
 import { IoCheckmarkCircle } from "react-icons/io5";
 

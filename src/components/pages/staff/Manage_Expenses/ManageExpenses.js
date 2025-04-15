@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ReactPaginate from "react-paginate";
 import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftCircle, MenuSquare } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";

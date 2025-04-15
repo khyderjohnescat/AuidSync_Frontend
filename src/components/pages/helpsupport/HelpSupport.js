@@ -73,7 +73,7 @@ function HelpSupport() {
           <div className="mb-4">
             <h3 className="text-lg font-medium text-white">Who can I contact for support?</h3>
             <p className="text-gray-300">
-              If you need further assistance, please contact our support team at <a href="mailto:support@example.com" className="text-blue-400">support@example.com</a>.
+              If you need further assistance, please contact our support team at <a href="mailto:audisync@example.com" className="text-blue-400">audisync@example.com</a>.
             </p>
           </div>
         </section>

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
 import { ArrowLeftCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -144,7 +144,7 @@ const ExpenseCategories = () => {
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
                     <div className="flex w-full justify-between">
                         <button
-                            onClick={() => navigate("/dashboard")}
+                            onClick={() => navigate("/manageexpenses")}
                             className="bg-blue-500 px-4 py-2 rounded flex items-center"
                         >
                             <ArrowLeftCircle className="mr-2" /> Back

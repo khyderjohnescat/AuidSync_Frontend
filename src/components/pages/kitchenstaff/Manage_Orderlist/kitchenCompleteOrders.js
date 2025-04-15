@@ -1,17 +1,16 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useMemo } from "react";
-import axiosInstance from "../../../context/axiosInstance";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
-import { ArrowLeftCircle } from "lucide-react"; // ✅ Ensure this is correctly imported
+import axiosInstance from "../../../../context/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircle } from "lucide-react";
 
-const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
+const CompletedOrders = ({ isOpen }) => {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true); // Only for initial load
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const navigate = useNavigate(); // ✅ Initialize useNavigate
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7; // Number of items per page
@@ -39,48 +38,51 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   };
 
   // Debounce filters
-  const debouncedFilters = useMemo(() => {
+  const debouncedFetchOrders = useMemo(() => {
+    let timeoutId;
     return () => {
-      const handler = setTimeout(() => {
-        fetchOrders();
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchOrders(false); // Pass false to skip loading state
       }, 500);
-      return () => clearTimeout(handler);
     };
   }, [filters]);
 
   useEffect(() => {
-    const cancel = debouncedFilters();
-    fetchOrders(); // Initial fetch
+    fetchOrders(true); // Initial fetch with loading state
 
     // Set up polling to refresh every 500ms
     const pollingInterval = setInterval(() => {
-      fetchOrders();
+      fetchOrders(false); // Polling without loading state
     }, 500);
 
     // Cleanup on unmount
     return () => {
-      cancel();
       clearInterval(pollingInterval);
     };
-  }, [debouncedFilters]);
+  }, []); // Empty dependency array for initial fetch and polling
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  useEffect(() => {
+    debouncedFetchOrders(); // Fetch when filters change (debounced)
+  }, [filters]);
+
+  const fetchOrders = async (showLoading = false) => {
+    if (showLoading) setInitialLoading(true); // Only set loading on initial fetch
     setError(null);
 
     try {
-      const response = await axiosInstance.get("/orders/cancelled", {
+      const response = await axiosInstance.get("/orders", {
         params: {
           ...filters,
-          status: "cancelled",
+          kitchenStatus: "completed", // Only fetch orders with kitchenStatus: "completed"
         },
         headers: { "Cache-Control": "no-cache" },
       });
       setOrders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      setError("Failed to fetch cancelled orders");
+      setError("Failed to fetch completed kitchen orders");
     } finally {
-      setLoading(false);
+      if (showLoading) setInitialLoading(false); // Only clear loading on initial fetch
     }
   };
 
@@ -99,7 +101,6 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
       date: "",
       payment_method: "",
     });
-    fetchOrders();
   };
 
   const handleViewOrderDetails = async (orderId) => {
@@ -162,7 +163,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
           </button>
 
           <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
-            Cancelled Order Details
+            Completed Kitchen Order Details
           </h2>
 
           <div className="flex gap-6">
@@ -189,10 +190,11 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${currentPage === 1
+                      className={`px-2 py-1 rounded ${
+                        currentPage === 1
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                        }`}
+                      }`}
                     >
                       Previous
                     </button>
@@ -202,10 +204,11 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
                     <button
                       onClick={handleNext}
                       disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${currentPage === totalPages
+                      className={`px-2 py-1 rounded ${
+                        currentPage === totalPages
                           ? "bg-gray-600 cursor-not-allowed"
                           : "bg-blue-500 hover:bg-blue-400"
-                        }`}
+                      }`}
                     >
                       Next
                     </button>
@@ -238,6 +241,7 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
                 <div>
                   <p><span className="font-semibold">Change:</span> ₱{selectedOrder.change}</p>
                   <p><span className="font-semibold">Status:</span> {selectedOrder.status}</p>
+                  <p><span className="font-semibold">Kitchen Status:</span> {selectedOrder.kitchenStatus}</p>
                   <p>
                     <span className="font-semibold">Created At:</span>{" "}
                     {new Date(selectedOrder.created_at).toLocaleString()}
@@ -254,14 +258,14 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
       <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
-        <h2 className="text-2xl font-bold mb-6 text-white text-center">Cancelled Orders</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white text-center">Completed Kitchen Orders</h2>
         <button
-          onClick={() => navigate("/orderlist")}
+          onClick={() => navigate("/kitchenorderlist")}
           className="bg-blue-500 px-4 py-2 rounded flex items-center"
         >
           <ArrowLeftCircle className="mr-2" /> Back
         </button>
-        
+
         {/* Filter Section */}
         <div className="mt-5 p-4 bg-gray-800 shadow-md rounded-md flex flex-wrap gap-3">
           <input
@@ -308,62 +312,77 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
         </div>
 
         {/* Table Section */}
-        {error && <div className="text-center text-red-500">{error}</div>}
-        <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-5"> {/* Add overflow-x-auto for horizontal scrolling */}
-          <table className="min-w-full table-auto text-base"> {/* Use table-auto for dynamic column widths */}
-            <thead className="bg-gray-700 text-white">
-              <tr>
-                {[
-                  "ID",
-                  "Order Type",
-                  "Customer",
-                  "Staff",
-                  "Discount Type",
-                  "Value",
-                  "Amount",
-                  "Final Price",
-                  "Payment",
-                  "Paid",
-                  "Change",
-                  "Status",
-                  "Created At",
-                  "",
-                ].map((header) => (
-                  <th key={header} className="p-2 text-left">
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-700">
-                  <td className="p-2">{order.id}</td>
-                  <td className="p-2">{order.order_type}</td>
-                  <td className="p-2">{order.customer_name || "N/A"}</td>
-                  <td className="p-2">{order.staff_name || "N/A"}</td>
-                  <td className="p-2">{order.discount_type || "None"}</td>
-                  <td className="p-2">₱{order.discount_value || "0.00"}</td>
-                  <td className="p-2">₱{order.discount_amount || "0.00"}</td>
-                  <td className="p-2">₱{order.final_price}</td>
-                  <td className="p-2">{order.payment_method}</td>
-                  <td className="p-2">₱{order.amount_paid}</td>
-                  <td className="p-2">₱{order.change}</td>
-                  <td className="p-2">{order.status}</td>
-                  <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
-                  <td className="p-2">
-                    <button
-                      onClick={() => handleViewOrderDetails(order.id)}
-                      className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
-                    >
-                      View
-                    </button>
-                  </td>
+        {initialLoading ? (
+          <div className="text-center text-gray-400 mt-4">Loading...</div>
+        ) : error ? (
+          <div className="text-center text-red-500 mt-4">{error}</div>
+        ) : (
+          <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md mt-4">
+            <table className="min-w-full table-auto text-base">
+              <thead className="bg-gray-700 text-white">
+                <tr>
+                  {[
+                    "ID",
+                    "Order Type",
+                    "Customer",
+                    "Staff",
+                    "Discount Type",
+                    "Value",
+                    "Amount",
+                    "Final Price",
+                    "Payment",
+                    "Paid",
+                    "Change",
+                    "Status",
+                    "Kitchen Status",
+                    "Created At",
+                    "Action",
+                  ].map((header) => (
+                    <th key={header} className="p-2 text-left">
+                      {header}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {paginatedOrders.length > 0 ? (
+                  paginatedOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-700">
+                      <td className="p-2">{order.id}</td>
+                      <td className="p-2">{order.order_type}</td>
+                      <td className="p-2">{order.customer_name || "N/A"}</td>
+                      <td className="p-2">{order.staff_name || "N/A"}</td>
+                      <td className="p-2">{order.discount_type || "None"}</td>
+                      <td className="p-2">₱{order.discount_value || "0.00"}</td>
+                      <td className="p-2">₱{order.discount_amount || "0.00"}</td>
+                      <td className="p-2">₱{order.final_price}</td>
+                      <td className="p-2">{order.payment_method}</td>
+                      <td className="p-2">₱{order.amount_paid}</td>
+                      <td className="p-2">₱{order.change}</td>
+                      <td className="p-2">{order.status}</td>
+                      <td className="p-2">{order.kitchenStatus}</td>
+                      <td className="p-2">{new Date(order.created_at).toLocaleString()}</td>
+                      <td className="p-2">
+                        <button
+                          onClick={() => handleViewOrderDetails(order.id)}
+                          className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={15} className="p-2 text-center text-gray-400">
+                      No completed kitchen orders found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination Controls */}
         <div className="flex justify-between items-center mt-4">
@@ -406,4 +425,4 @@ const CancelledOrders = ({ isOpen }) => { // Added isOpen prop
   );
 };
 
-export default CancelledOrders;
+export default CompletedOrders;

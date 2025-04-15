@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
 import { FaFilter, FaTimes, FaArrowLeft } from "react-icons/fa";
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

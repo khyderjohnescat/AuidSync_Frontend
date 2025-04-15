@@ -4,7 +4,7 @@ import { FaSearch } from "react-icons/fa";
 import { ArrowLeftCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import axiosInstance from "../../../context/axiosInstance";
+import axiosInstance from "../../../../context/axiosInstance";
 
 function DeletedProducts() {
   const [deletedProducts, setDeletedProducts] = useState([]);
