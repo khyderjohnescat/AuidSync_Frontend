@@ -29,6 +29,8 @@ import ProfitsDashboard from "./components/pages/admin/Dashboard/profitsDashboar
 import OrdersDashboard from "./components/pages/admin/Dashboard/ordersDashboard";
 import ExpensesDashboard from "./components/pages/admin/Dashboard/expensesDashboard";
 import HelpSupport from "./components/pages/helpsupport/HelpSupport";
+import CustomerSupport from "./components/pages/helpsupport/CustomerSupport";
+
 import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient(); // Create QueryClient instance
@@ -45,6 +47,15 @@ function Layout() {
   useIdleTimeout(hideIdleTimeout ? Infinity : 1 * 60 * 60 * 1000);
 
   const hideSidebar = hideIdleTimeout;
+
+  // Special case for the Customer Support page
+  if (location.pathname === "/customersupport") {
+    return (
+      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+        <CustomerSupport />
+      </div>
+    );
+  }
 
   return (
     <div className="flex">

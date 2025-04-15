@@ -20,6 +20,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     await logout();
   };
 
+  // Hide sidebar if the current route is "/helpsupport"
+  if (location.pathname === "/customersupport") {
+    return null;
+  }
+
   return (
     <>
       <div className={`bg-black text-white h-screen p-4 transition-all duration-300 fixed top-0 left-0 flex flex-col shadow-lg ${isOpen ? "w-60" : "w-16"}`}>
@@ -36,7 +41,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
           <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
           <NavItem to="/admindashboard" icon={<MdDashboard />} text="Dashboard" isOpen={isOpen} location={location} />
-
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">

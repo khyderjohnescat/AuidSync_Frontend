@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaHeadset } from "react-icons/fa"; // Import the customer support icon
 import AuthContext from "../../../context/AuthContext";
 
 const Login = () => {
@@ -95,7 +96,7 @@ const Login = () => {
                 required
               />
 
-              {/* ✅ Updated Forgot Password Link */}
+              {/* Forgot Password Link */}
               <Link
                 to="/forgot-password"
                 className="text-sm text-gray-400 text-right block mb-4 hover:text-gray-200"
@@ -119,6 +120,15 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Customer Support Button */}
+      <Link
+        to="/customersupport"
+        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center transition duration-300"
+        title="Customer Support"
+      >
+        <FaHeadset className="text-2xl" />
+      </Link>
     </div>
   );
 };
