@@ -1,13 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import ReactPaginate from "react-paginate"; // Add this import
 import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
 import axiosInstance from "../../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftCircle, MenuSquare } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { MdCategory, MdOutlineCategory } from "react-icons/md";
 
 function ExpenseManager() {
   const navigate = useNavigate();
@@ -35,26 +33,21 @@ function ExpenseManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(0); // Change to 0-based indexing for ReactPaginate
-  const [itemsPerPage] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
+  // Add state for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Number of items per page
 
-  // Fetch Expenses with Pagination
+  // Fetch Expenses
   const fetchExpenses = useCallback(async () => {
     try {
-      const params = {
-        page: currentPage + 1, // API uses 1-based indexing
-        limit: itemsPerPage,
-      };
+      const params = {};
       if (statusFilter) params.status = statusFilter;
       if (paymentStatusFilter) params.payment_status = paymentStatusFilter;
       if (categoryFilter) params.category_id = categoryFilter;
 
       const response = await axiosInstance.get("/expenses", { params });
-      const { data, pagination } = response.data;
+      const { data } = response.data;
       setExpenses(Array.isArray(data) ? data : []);
-      setTotalPages(pagination?.totalPages || 1);
     } catch (error) {
       console.error("Error fetching expenses:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Failed to fetch expenses", {
@@ -62,9 +55,8 @@ function ExpenseManager() {
         autoClose: 3000,
       });
       setExpenses([]);
-      setTotalPages(1);
     }
-  }, [currentPage, itemsPerPage, statusFilter, paymentStatusFilter, categoryFilter]);
+  }, [statusFilter, paymentStatusFilter, categoryFilter]);
 
   // Fetch Categories
   const fetchCategories = useCallback(async () => {
@@ -157,7 +149,7 @@ function ExpenseManager() {
         });
       }
 
-      setCurrentPage(0); // Reset to first page after submission
+      // Removed setCurrentPage(0) as pagination is no longer used
       await fetchExpenses();
       closeModal();
     } catch (error) {
@@ -194,7 +186,7 @@ function ExpenseManager() {
     if (window.confirm("Are you sure you want to delete this expense?")) {
       try {
         const response = await axiosInstance.delete(`/expenses/${id}`);
-        setCurrentPage(0); // Reset to first page after deletion
+        // Removed setCurrentPage(0) as pagination is no longer used
         await fetchExpenses();
         toast.success(response.data.message || "Expense deleted successfully", {
           position: "top-center",
@@ -236,17 +228,26 @@ function ExpenseManager() {
     setError("");
   };
 
-  // Remove client-side search filtering to rely on server-side pagination
-  const filteredExpenses = expenses; // Use server-fetched expenses directly
+  // Calculate paginated expenses
+  const totalExpenses = expenses.length;
+  const totalPages = Math.ceil(totalExpenses / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedExpenses = expenses.slice(startIndex, endIndex);
 
-  const handlePageClick = (data) => {
-    setCurrentPage(data.selected);
+  // Handle pagination controls
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
   return (
     <>
-      <div className="bg-gray-800 flex flex-col min-h-screen p-2 sm:p-4 text-white">
-        <div className="p-4 sm:p-6 bg-gray-900 rounded-lg text-white flex-1">
+       <div className="bg-gray-800 flex flex-col gap-2 min-h-screen p-2 md:p-4 text-white">
+  <div className="bg-gray-900 flex-1 rounded-lg p-4 md:p-6 text-gray-200 transition-all duration-300 overflow-auto">
           <h2 className="text-xl sm:text-2xl font-bold mb-4 text-white text-center">
             Expense Management
           </h2>
@@ -363,7 +364,7 @@ function ExpenseManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredExpenses.length === 0 ? (
+                  {paginatedExpenses.length === 0 ? (
                     <tr>
                       <td
                         colSpan="15"
@@ -373,7 +374,7 @@ function ExpenseManager() {
                       </td>
                     </tr>
                   ) : (
-                    filteredExpenses.map((expense) => (
+                    paginatedExpenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-gray-700">
                         <td className="p-2 sm:p-3 text-xs sm:text-sm">
                           {expense.id}
@@ -468,32 +469,16 @@ function ExpenseManager() {
                   )}
                 </tbody>
               </table>
-              {/* Pagination for Larger Screens */}
-              <ReactPaginate
-                previousLabel={"Previous"}
-                nextLabel={"Next"}
-                breakLabel={"..."}
-                pageCount={totalPages}
-                marginPagesDisplayed={2}
-                pageRangeDisplayed={3}
-                onPageChange={handlePageClick}
-                containerClassName={"flex justify-center items-center mt-4 space-x-2"}
-                pageClassName={"px-3 py-1 rounded text-sm bg-gray-600 hover:bg-gray-500"}
-                activeClassName={"bg-blue-700"}
-                previousClassName={"px-3 py-1 rounded text-sm bg-blue-500 hover:bg-blue-600"}
-                nextClassName={"px-3 py-1 rounded text-sm bg-blue-500 hover:bg-blue-600"}
-                disabledClassName={"bg-gray-600 cursor-not-allowed"}
-              />
             </div>
 
             {/* Card layout for smaller screens */}
             <div className="block sm:hidden space-y-4">
-              {filteredExpenses.length === 0 ? (
+              {paginatedExpenses.length === 0 ? (
                 <div className="p-3 text-center text-gray-400 text-sm">
                   No expenses found.
                 </div>
               ) : (
-                filteredExpenses.map((expense) => (
+                paginatedExpenses.map((expense) => (
                   <div
                     key={expense.id}
                     className="bg-gray-700 p-3 rounded-lg shadow"
@@ -583,24 +568,39 @@ function ExpenseManager() {
                   </div>
                 ))
               )}
-              {/* Pagination for Smaller Screens */}
-              <ReactPaginate
-                previousLabel={"Previous"}
-                nextLabel={"Next"}
-                breakLabel={"..."}
-                pageCount={totalPages}
-                marginPagesDisplayed={2}
-                pageRangeDisplayed={3}
-                onPageChange={handlePageClick}
-                containerClassName={"flex justify-center items-center mt-4 space-x-2"}
-                pageClassName={"px-3 py-1 rounded text-sm bg-gray-600 hover:bg-gray-500"}
-                activeClassName={"bg-blue-700"}
-                previousClassName={"px-3 py-1 rounded text-sm bg-blue-500 hover:bg-blue-600"}
-                nextClassName={"px-3 py-1 rounded text-sm bg-blue-500 hover:bg-blue-600"}
-                disabledClassName={"bg-gray-600 cursor-not-allowed"}
-              />
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {totalExpenses > itemsPerPage && ( // Only show pagination if totalExpenses exceeds itemsPerPage
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded ${
+                  currentPage === 1
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-400"
+                }`}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded ${
+                  currentPage === totalPages
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-400"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
 
           {/* Expense Modal */}
           {isModalOpen && (

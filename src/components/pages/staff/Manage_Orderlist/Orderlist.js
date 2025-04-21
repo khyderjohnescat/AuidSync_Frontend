@@ -23,21 +23,6 @@ const OrderList = ({ isOpen }) => {
     payment_method: "",
   });
 
-  // Calculate paginated orders
-  const totalOrders = orders.length;
-  const totalPages = Math.ceil(totalOrders / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedOrders = orders.slice(startIndex, endIndex);
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-
   const debouncedFilters = useMemo(() => {
     let timeoutId;
     return () => {
@@ -385,8 +370,8 @@ const OrderList = ({ isOpen }) => {
   };
 
   return (
-    <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
-      <div className="bg-gray-900 min-h-full rounded-lg p-4 text-gray-200 transition-all duration-300">
+    <div className="bg-gray-800 flex flex-col gap-2 min-h-screen p-2 md:p-4 text-white">
+  <div className="bg-gray-900 flex-1 rounded-lg p-4 md:p-6 text-gray-200 transition-all duration-300 overflow-auto">
         <h2 className="text-2xl font-bold text-white text-center">Order List</h2>
 
         <div className="flex flex-row items-end gap-4 mb-4 justify-end">
@@ -488,7 +473,7 @@ const OrderList = ({ isOpen }) => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedOrders.map((order) => (
+                {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-700">
                     <td className="p-2">{order.id}</td>
                     <td className="p-2">{order.order_type}</td>
@@ -526,35 +511,6 @@ const OrderList = ({ isOpen }) => {
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center mt-4">
-          <button
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded ${
-              currentPage === 1
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-400"
-            }`}
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded ${
-              currentPage === totalPages
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-400"
-            }`}
-          >
-            Next
-          </button>
         </div>
 
         {selectedOrder && (
