@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from "react";
 import { FaSearch, FaShoppingCart, FaTrash, FaTag } from "react-icons/fa";
@@ -5,6 +6,34 @@ import axiosInstance from "../../../../context/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
+
+// Utility function to sanitize input (prevents XSS)
+const sanitizeInput = (input) => {
+  return input.replace(/[<>{}]/g, "");
+};
+
+// Utility function to validate discount
+const validateDiscount = (type, value, totalPrice) => {
+  if (!type || !value || value <= 0) return { valid: true, amount: 0 };
+  if (type === "percentage") {
+    if (value > 100) return { valid: false, error: "Percentage discount cannot exceed 100%" };
+    return { valid: true, amount: (totalPrice * value) / 100 };
+  }
+  if (type === "fixed") {
+    if (value > totalPrice) return { valid: false, error: "Fixed discount cannot exceed total price" };
+    return { valid: true, amount: value };
+  }
+  return { valid: false, error: "Invalid discount type" };
+};
+
+// Utility function to validate customer name
+const validateCustomerName = (name) => {
+  const maxLength = 50;
+  const regex = /^[a-zA-Z0-9\s]*$/;
+  if (name.length > maxLength) return { valid: false, error: `Name cannot exceed ${maxLength} characters` };
+  if (!regex.test(name)) return { valid: false, error: "Name can only contain letters, numbers, and spaces" };
+  return { valid: true };
+};
 
 const POS = () => {
   const [search, setSearch] = useState("");
@@ -16,11 +45,12 @@ const POS = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [amountPaid, setAmountPaid] = useState(0);
+  const [amountPaid, setAmountPaid] = useState("");
   const [discountType, setDiscountType] = useState(null);
-  const [discountValue, setDiscountValue] = useState(0);
+  const [discountValue, setDiscountValue] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchUser();
@@ -68,28 +98,42 @@ const POS = () => {
     }, 0);
   }, [cart]);
 
-  const discountAmount = useMemo(() => {
-    if (discountType === "percentage") {
-      return totalPrice * (discountValue / 100);
-    } else if (discountType === "fixed") {
-      return Math.min(discountValue, totalPrice);
-    }
-    return 0;
+  const discountValidation = useMemo(() => {
+    return validateDiscount(discountType, Number(discountValue), totalPrice);
   }, [discountType, discountValue, totalPrice]);
 
-  const finalPrice = useMemo(
-    () => totalPrice - discountAmount,
-    [totalPrice, discountAmount]
-  );
+  const discountAmount = discountValidation.valid ? discountValidation.amount : 0;
+  const finalPrice = Math.max(0, totalPrice - discountAmount);
+
+  const customerNameValidation = useMemo(() => {
+    return validateCustomerName(customerName);
+  }, [customerName]);
+
+  const validateAmountPaid = () => {
+    if (amountPaid === "" || Number(amountPaid) < 0) {
+      return { valid: false, error: "Amount paid cannot be negative" };
+    }
+    if (paymentMethod === "cash" && Number(amountPaid) < finalPrice) {
+      return { valid: false, error: "Amount paid is insufficient" };
+    }
+    return { valid: true };
+  };
+  const amountPaidValidation = useMemo(() => validateAmountPaid(), [amountPaid, paymentMethod, finalPrice]);
 
   const change = useMemo(() => {
-    const result = amountPaid - finalPrice;
+    const result = Number(amountPaid) - finalPrice;
     return isNaN(result) || result < 0 ? 0 : result;
   }, [amountPaid, finalPrice]);
 
   const canCheckout = useMemo(() => {
-    return amountPaid >= finalPrice && finalPrice > 0;
-  }, [amountPaid, finalPrice]);
+    return (
+      cart.length > 0 &&
+      discountValidation.valid &&
+      customerNameValidation.valid &&
+      amountPaidValidation.valid &&
+      !loading
+    );
+  }, [cart, discountValidation, customerNameValidation, amountPaidValidation, loading]);
 
   const fetchUser = () => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -168,15 +212,37 @@ const POS = () => {
     }
   };
 
-  const checkout = async () => {
-    if (!canCheckout) return;
+  const handleDiscountChange = (value) => {
+    const numValue = Number(value);
+    if (discountType === "percentage" && numValue > 100) {
+      setErrors({ ...errors, discount: "Percentage discount cannot exceed 100%" });
+      return;
+    }
+    if (discountType === "fixed" && numValue > totalPrice) {
+      setErrors({ ...errors, discount: "Fixed discount cannot exceed total price" });
+      return;
+    }
+    setDiscountValue(value);
+    setErrors({ ...errors, discount: "" });
+  };
 
-    const nameToSave = customerName.trim() || "None";
+  const checkout = async () => {
+    const newErrors = {};
+    if (!discountValidation.valid) newErrors.discount = discountValidation.error;
+    if (!customerNameValidation.valid) newErrors.customerName = customerNameValidation.error;
+    if (!amountPaidValidation.valid) newErrors.amountPaid = amountPaidValidation.error;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     if (!paymentMethod) {
       toast.error("Please select a payment method.");
       return;
     }
+
+    const nameToSave = sanitizeInput(customerName.trim()) || "None";
 
     const result = await Swal.fire({
       title: "Confirm Checkout",
@@ -208,9 +274,11 @@ const POS = () => {
         toast.success("Order placed successfully!");
         fetchCart();
         fetchProducts();
-        setAmountPaid(0);
-        setDiscountType("none");
-        setDiscountValue(0);
+        setAmountPaid("");
+        setDiscountType(null);
+        setDiscountValue("");
+        setCustomerName("");
+        setErrors({});
       } else {
         toast.error(`Checkout failed: ${response.data.message}`);
       }
@@ -380,26 +448,36 @@ const POS = () => {
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2">
               <select
-                className="bg-gray-700 text-white p-2 rounded w-1/3"
+                className="bg-gray-700 text-white p-2 rounded w-full"
                 value={discountType || "none"}
-                onChange={(e) =>
-                  setDiscountType(
-                    e.target.value === "none" ? null : e.target.value
-                  )
-                }
+                onChange={(e) => {
+                  setDiscountType(e.target.value === "none" ? null : e.target.value);
+                  setDiscountValue("");
+                  setErrors({ ...errors, discount: "" });
+                }}
+                disabled={cart.length === 0}
               >
                 <option value="none">No Discount</option>
                 <option value="percentage">% (Percentage)</option>
                 <option value="fixed">₱ (Fixed Amount)</option>
               </select>
-              <input
-                type="number"
-                placeholder="Discount Value"
-                className="bg-gray-700 text-white p-2 rounded w-2/3"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(e.target.value)}
-              />
+              {discountType && (
+                <input
+                  type="number"
+                  placeholder="Discount Value"
+                  className="bg-gray-700 text-white p-2 rounded w-full"
+                  value={discountValue}
+                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  min="0"
+                  max={discountType === "percentage" ? "100" : totalPrice}
+                  step={discountType === "percentage" ? "1" : "0.01"}
+                  disabled={cart.length === 0}
+                />
+              )}
             </div>
+            {discountType && errors.discount && (
+              <p className="text-red-500 text-sm">{errors.discount}</p>
+            )}
 
             {/* Summary */}
             <div className="flex justify-between text-gray-400">
@@ -423,8 +501,15 @@ const POS = () => {
               placeholder="Customer Name (Optional)"
               className="bg-gray-700 text-white w-full p-2 rounded"
               value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
+              onChange={(e) => {
+                setCustomerName(e.target.value);
+                setErrors({ ...errors, customerName: "" });
+              }}
+              maxLength={50}
             />
+            {errors.customerName && (
+              <p className="text-red-500 text-sm">{errors.customerName}</p>
+            )}
           </div>
 
           {/* Payment Method */}
@@ -446,8 +531,17 @@ const POS = () => {
               placeholder="Amount Paid"
               className="bg-gray-700 text-white w-full p-2 rounded"
               value={amountPaid}
-              onChange={(e) => setAmountPaid(e.target.value)}
+              onChange={(e) => {
+                setAmountPaid(e.target.value);
+                setErrors({ ...errors, amountPaid: "" });
+              }}
+              min="0"
+              step="0.01"
+              disabled={cart.length === 0}
             />
+            {errors.amountPaid && (
+              <p className="text-red-500 text-sm">{errors.amountPaid}</p>
+            )}
           </div>
 
           {/* Display Change */}
