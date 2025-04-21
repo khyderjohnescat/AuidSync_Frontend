@@ -25,8 +25,10 @@ import ExpenseManager from "./components/pages/staff/Manage_Expenses/ManageExpen
 import ExpenseCategories from "./components/pages/staff/Manage_Expenses/expensesCategory";
 import AnalyticsDashboard from "./components/pages/admin/Dashboard/Admin_Dashboard";
 import SalesDashboard from "./components/pages/admin/Dashboard/salesDashboard";
+import StaffSalesDashboard from "./components/pages/staff/Dashboard/salesDashboard";
 import ProfitsDashboard from "./components/pages/admin/Dashboard/profitsDashboard";
 import OrdersDashboard from "./components/pages/admin/Dashboard/ordersDashboard";
+import StaffOrdersDashboard from "./components/pages/staff/Dashboard/ordersDashboard";
 import ExpensesDashboard from "./components/pages/admin/Dashboard/expensesDashboard";
 import HelpSupport from "./components/pages/helpsupport/HelpSupport";
 import CustomerSupport from "./components/pages/helpsupport/CustomerSupport";
@@ -83,7 +85,9 @@ function Layout() {
           <Route path="/expensescategory" element={<ProtectedRoute><ExpenseCategories isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/admindashboard" element={<ProtectedRoute><AnalyticsDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/sales-dashboard" element={<ProtectedRoute><SalesDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/staff-sales-dashboard" element={<ProtectedRoute><StaffSalesDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/orders-dashboard" element={<ProtectedRoute><OrdersDashboard isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/staff-orders-dashboard" element={<ProtectedRoute><StaffOrdersDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/profits-dashboard" element={<ProtectedRoute><ProfitsDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/expenses-dashboard" element={<ProtectedRoute><ExpensesDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/helpsupport" element={<ProtectedRoute><HelpSupport isOpen={isOpen} /></ProtectedRoute>} />

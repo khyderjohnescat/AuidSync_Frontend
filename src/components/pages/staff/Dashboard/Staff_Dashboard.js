@@ -240,7 +240,7 @@ function AnalyticsDashboard() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          <Link to="/sales-dashboard" className="block">
+          <Link to="/staff-sales-dashboard" className="block">
             <div className="bg-gray-800 p-6 rounded-lg shadow-md text-center hover:bg-gray-700 cursor-pointer transition duration-200">
               <h3 className="text-lg font-medium text-white mb-2">Total Sales</h3>
               {loadingOverview ? (
@@ -252,7 +252,7 @@ function AnalyticsDashboard() {
               )}
             </div>
           </Link>
-          <Link to="/orders-dashboard" className="block">
+          <Link to="/staff-orders-dashboard" className="block">
             <div className="bg-gray-800 p-6 rounded-lg shadow-md text-center hover:bg-gray-700 cursor-pointer transition duration-200">
               <h3 className="text-lg font-medium text-white mb-2">Total Orders</h3>
               {loadingOverview ? (
