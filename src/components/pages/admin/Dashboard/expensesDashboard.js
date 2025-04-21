@@ -12,6 +12,8 @@ import {
 } from "chart.js";
 import axiosInstance from "../../../../context/axiosInstance";
 import { FaUtensils, FaLightbulb, FaCoffee, FaTools, FaQuestion } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircle } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -27,6 +29,8 @@ function ExpensesDashboard() {
     { length: new Date().getFullYear() - 2019 + 1 },
     (_, i) => 2020 + i
   );
+
+  const navigate = useNavigate();
 
   const fetchExpensesData = useCallback(() => {
     setLoading(true);
@@ -138,6 +142,12 @@ function ExpensesDashboard() {
   return (
     <div className="bg-gray-800 min-h-screen p-6 text-white">
       <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => navigate("/admindashboard")}
+          className="bg-blue-500 px-4 py-2 rounded flex items-center mb-4"
+        >
+          <ArrowLeftCircle className="mr-2" /> Back
+        </button>
         <div className="flex items-center">
           <h2 className="text-3xl font-semibold">Expenses</h2>
         </div>

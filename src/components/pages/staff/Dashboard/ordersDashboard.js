@@ -10,6 +10,8 @@ import {
   Legend,
 } from "chart.js";
 import axiosInstance from "../../../../context/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircle } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -25,6 +27,8 @@ function StaffOrdersDashboard() {
     { length: new Date().getFullYear() - 2019 + 1 },
     (_, i) => 2020 + i
   );
+
+  const navigate = useNavigate();
 
   const fetchOrdersData = useCallback(() => {
     setLoading(true);
@@ -106,6 +110,12 @@ function StaffOrdersDashboard() {
   return (
     <div className="bg-gray-800 min-h-screen p-6 text-white">
       <div className="flex justify-between items-center mb-6">
+      <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-blue-500 px-4 py-2 rounded flex items-center mb-4"
+        >
+          <ArrowLeftCircle className="mr-2" /> Back
+        </button>
         <div className="flex items-center">
           <h2 className="text-3xl font-semibold">Order</h2>
         </div>
