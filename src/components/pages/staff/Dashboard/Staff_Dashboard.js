@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Bar } from "react-chartjs-2";
-import { FaFilter, FaTimes} from "react-icons/fa";
+import { FaFilter, FaTimes } from "react-icons/fa";
 import axiosInstance from "../../../../context/axiosInstance";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -12,6 +12,9 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 function AnalyticsDashboard() {
   const currentYear = new Date().getFullYear();
+  const currentDate = new Date(); // Current date: Apr 22, 2025
+  const defaultEndDate = currentDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD (2025-04-22)
+
   const [overviewData, setOverviewData] = useState({
     total_sales: "0.00",
     total_orders: 0,
@@ -19,7 +22,7 @@ function AnalyticsDashboard() {
   const [chartData, setChartData] = useState([]);
   const [filters, setFilters] = useState({
     start_date: `${currentYear}-01-01`,
-    end_date: `${currentYear}-12-31`,
+    end_date: defaultEndDate, // Updated to Apr 22, 2025
     interval: "monthly",
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -91,10 +94,13 @@ function AnalyticsDashboard() {
     }));
   };
 
+  // Apply filters with validation
   const applyFilters = () => {
+    const start = new Date(filters.start_date);
+    const end = filters.end_date ? new Date(filters.end_date) : new Date(defaultEndDate);
+    const today = new Date(defaultEndDate); // Apr 22, 2025
+
     if (filters.start_date && filters.end_date) {
-      const start = new Date(filters.start_date);
-      const end = new Date(filters.end_date);
       if (start > end) {
         toast.error("Start date must be before end date.", {
           position: "top-center",
@@ -102,16 +108,25 @@ function AnalyticsDashboard() {
         });
         return;
       }
+      if (end > today) {
+        toast.error("End date cannot be in the future.", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        return;
+      }
     }
+
     fetchOverview();
     fetchChartData();
     setIsFilterModalOpen(false);
   };
 
+  // Reset filters
   const resetFilters = () => {
     setFilters({
       start_date: `${currentYear}-01-01`,
-      end_date: `${currentYear}-12-31`,
+      end_date: defaultEndDate,
       interval: "monthly",
     });
     setTimeout(() => {
@@ -127,14 +142,25 @@ function AnalyticsDashboard() {
       if (interval === "daily") {
         return new Date(period).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
       } else if (interval === "weekly") {
-        const year = period.toString().substring(0, 4);
-        const week = parseInt(period.toString().substring(4), 10);
-        const date = new Date(year, 0, 1 + (week - 1) * 7);
-        const startOfWeek = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        return `Week ${week}, ${year} (${startOfWeek})`;
+        const [year, week] = period.split("-");
+        const yearNum = parseInt(year, 10);
+        const weekNum = parseInt(week, 10);
+        if (isNaN(yearNum) || isNaN(weekNum) || weekNum < 1 || weekNum > 53) {
+          return `Week ${weekNum}, ${year} (Invalid)`;
+        }
+        const firstDayOfYear = new Date(Date.UTC(yearNum, 0, 1));
+        const daysOffset = firstDayOfYear.getUTCDay() === 0 ? -6 : 1 - firstDayOfYear.getUTCDay();
+        const firstMonday = new Date(firstDayOfYear);
+        firstMonday.setDate(firstDayOfYear.getDate() + daysOffset);
+        const startOfWeek = new Date(firstMonday);
+        startOfWeek.setDate(firstMonday.getDate() + (weekNum - 1) * 7);
+        const actualYear = startOfWeek.getUTCFullYear();
+        const formattedStart = startOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        return `Week ${weekNum}, ${actualYear} (${formattedStart})`;
       } else if (interval === "monthly") {
-        const month = parseInt(period.split("-")[1], 10);
-        return new Date(0, month - 1).toLocaleString("default", { month: "short" });
+        const [year, month] = period.split("-");
+        const monthNum = parseInt(month, 10) - 1;
+        return new Date(year, monthNum).toLocaleString("en-US", { month: "short", year: "numeric" });
       } else if (interval === "yearly") {
         return period.toString();
       }
@@ -269,75 +295,71 @@ function AnalyticsDashboard() {
 
       {/* Filter Modal */}
       {isFilterModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" role="dialog" aria-modal="true">
-          <div className="bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true">
+          <div className="bg-gray-700 p-6 rounded-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">Filter Statistics</h3>
+              <h3 className="text-xl font-semibold">Filters</h3>
               <button
                 onClick={() => setIsFilterModalOpen(false)}
-                className="text-gray-400 hover:text-white p-1"
                 aria-label="Close filter modal"
               >
-                <FaTimes size={18} />
+                <FaTimes className="w-6 h-6 text-gray-400 hover:text-white" />
               </button>
             </div>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Start Date</label>
-                  <input
-                    type="date"
-                    name="start_date"
-                    value={filters.start_date}
-                    onChange={handleFilterChange}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">End Date (Optional)</label>
-                  <input
-                    type="date"
-                    name="end_date"
-                    value={filters.end_date}
-                    onChange={handleFilterChange}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Leave blank for no end date"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Interval</label>
-                  <select
-                    name="interval"
-                    value={filters.interval}
-                    onChange={handleFilterChange}
-                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                  </select>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-1">Start Date</label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={filters.start_date}
+                  onChange={handleFilterChange}
+                  max={defaultEndDate}
+                  className="w-full p-2 rounded bg-gray-600 text-white"
+                />
               </div>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={applyFilters}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition duration-200"
-                  aria-label="Apply filters"
-                >
-                  Apply Filters
-                </button>
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200"
-                  aria-label="Reset filters"
-                >
-                  Reset Filters
-                </button>
+              <div>
+                <label className="block text-sm mb-1">End Date</label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={filters.end_date}
+                  onChange={handleFilterChange}
+                  max={defaultEndDate}
+                  className="w-full p-2 rounded bg-gray-600 text-white"
+                />
               </div>
-            </form>
+              <div>
+                <label className="block text-sm mb-1">Interval</label>
+                <select
+                  name="interval"
+                  value={filters.interval}
+                  onChange={handleFilterChange}
+                  className="w-full p-2 rounded bg-gray-600 text-white"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <button
+                onClick={resetFilters}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                aria-label="Reset filters"
+              >
+                Reset
+              </button>
+              <button
+                onClick={applyFilters}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                aria-label="Apply filters"
+              >
+                Apply
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -352,7 +374,7 @@ function AnalyticsDashboard() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light" // Changed to match the dark UI
+        theme="light" 
       />
     </div>
   );
