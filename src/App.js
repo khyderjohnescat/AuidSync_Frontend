@@ -30,7 +30,7 @@ import ProfitsDashboard from "./components/pages/admin/Dashboard/profitsDashboar
 import OrdersDashboard from "./components/pages/admin/Dashboard/ordersDashboard";
 import StaffOrdersDashboard from "./components/pages/staff/Dashboard/ordersDashboard";
 import ExpensesDashboard from "./components/pages/admin/Dashboard/expensesDashboard";
-import HelpSupport from "./components/pages/helpsupport/HelpSupport";
+import HelpSupport from "./components/pages/settings/HelpSupport";
 import CustomerSupport from "./components/pages/helpsupport/CustomerSupport";
 
 import { AuthProvider } from "./context/AuthContext";
@@ -90,7 +90,7 @@ function Layout() {
           <Route path="/staff-orders-dashboard" element={<ProtectedRoute><StaffOrdersDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/profits-dashboard" element={<ProtectedRoute><ProfitsDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/expenses-dashboard" element={<ProtectedRoute><ExpensesDashboard isOpen={isOpen} /></ProtectedRoute>} />
-          <Route path="/helpsupport" element={<ProtectedRoute><HelpSupport isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/help-support" element={<ProtectedRoute><HelpSupport isOpen={isOpen} /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>
