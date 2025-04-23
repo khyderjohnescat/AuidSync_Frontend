@@ -197,11 +197,13 @@ const POS = () => {
 
   const addToCart = async (productId, quantity) => {
     if (!user || typeof user.id !== "number") return;
-    if (!productId || !quantity || quantity <= 0) return;
+    // Use 1 if quantity is undefined, empty, or invalid
+    const effectiveQuantity = quantity && !isNaN(quantity) && quantity > 0 ? quantity : 1;
+    if (!productId || effectiveQuantity <= 0) return;
 
     const payload = {
       userId: user.id,
-      products: [{ productId, quantity }],
+      products: [{ productId, quantity: effectiveQuantity }],
     };
 
     try {
@@ -215,13 +217,29 @@ const POS = () => {
     }
   };
 
-  const handleQuantityChange = (productId, delta) => {
+  const handleQuantityChange = (productId, value) => {
     setQuantities((prev) => {
       const product = products.find((p) => p.id === productId);
-      const currentQty = prev[productId] || 1;
-      const newQty = Math.max(1, Math.min(currentQty + delta, product.quantity));
+      let newQty;
+      if (typeof value === "number") {
+        // Handle button clicks (increment/decrement)
+        const currentQty = prev[productId] && !isNaN(prev[productId]) ? prev[productId] : 1;
+        newQty = Math.max(1, Math.min(currentQty + value, product.quantity));
+      } else {
+        // Handle direct input
+        if (value === "") {
+          newQty = ""; // Allow empty input
+        } else {
+          const parsedValue = parseInt(value, 10);
+          newQty = isNaN(parsedValue) || parsedValue < 1 ? "" : Math.min(parsedValue, product.quantity);
+        }
+      }
       return { ...prev, [productId]: newQty };
     });
+  };
+
+  const handleQuantityFocus = (event) => {
+    event.target.select(); // Select entire value on focus
   };
 
   const removeFromCart = async (id) => {
@@ -334,6 +352,15 @@ const POS = () => {
             height: 100vh;
             overflow: hidden;
           }
+          /* Hide spinners for quantity input */
+          input.quantity-input::-webkit-inner-spin-button,
+          input.quantity-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          input.quantity-input {
+            -moz-appearance: textfield; /* Firefox */
+          }
         `}
       </style>
       <div className="flex h-screen bg-gray-950 text-white">
@@ -421,17 +448,25 @@ const POS = () => {
                         <button
                           className="bg-gray-700 text-white p-2 rounded-l-md hover:bg-gray-600 disabled:opacity-50"
                           onClick={() => handleQuantityChange(product.id, -1)}
-                          disabled={quantities[product.id] <= 1}
+                          disabled={(quantities[product.id] || 1) <= 1}
                         >
                           <FaMinus />
                         </button>
-                        <span className="px-4 py-2 bg-gray-800 text-white font-semibold">
-                          {quantities[product.id] || 1}
-                        </span>
+                        <input
+                          type="number"
+                          className="quantity-input w-16 text-center bg-gray-800 text-white py-2 px-2 mx-1 rounded"
+                          value={quantities[product.id] !== undefined ? quantities[product.id] : ""}
+                          onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                          onFocus={handleQuantityFocus}
+                          min="1"
+                          max={product.quantity}
+                          step="1"
+                          placeholder="1"
+                        />
                         <button
                           className="bg-gray-700 text-white p-2 rounded-r-md hover:bg-gray-600 disabled:opacity-50"
                           onClick={() => handleQuantityChange(product.id, 1)}
-                          disabled={quantities[product.id] >= product.quantity}
+                          disabled={(quantities[product.id] || 1) >= product.quantity}
                         >
                           <FaPlus />
                         </button>
@@ -443,7 +478,7 @@ const POS = () => {
                           ? "bg-blue-600 hover:bg-blue-500"
                           : "bg-gray-600 cursor-not-allowed"
                       }`}
-                      onClick={() => isAvailable && addToCart(product.id, quantities[product.id] || 1)}
+                      onClick={() => isAvailable && addToCart(product.id, quantities[product.id])}
                       disabled={!isAvailable}
                     >
                       {isAvailable ? (
