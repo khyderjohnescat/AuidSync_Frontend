@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, useMemo } from "react";
-import { FaSearch, FaShoppingCart, FaTrash, FaTag } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaTrash, FaTag, FaPlus, FaMinus } from "react-icons/fa";
 import axiosInstance from "../../../../context/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -51,6 +51,7 @@ const POS = () => {
   const [customerName, setCustomerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [quantities, setQuantities] = useState({}); // Track quantities for each product
 
   useEffect(() => {
     fetchUser();
@@ -149,7 +150,15 @@ const POS = () => {
     setError(null);
     try {
       const { data } = await axiosInstance.get("/products");
-      setProducts(data.filter((product) => product.deleted_at === null));
+      const filteredProducts = data.filter((product) => product.deleted_at === null);
+      setProducts(filteredProducts);
+      // Initialize quantities for each product
+      setQuantities(
+        filteredProducts.reduce((acc, product) => ({
+          ...acc,
+          [product.id]: 1,
+        }), {})
+      );
     } catch (err) {
       setError("Failed to fetch products");
       console.error(err);
@@ -197,9 +206,21 @@ const POS = () => {
     try {
       await axiosInstance.post("/cart/add", payload);
       fetchCart();
+      // Reset quantity for the product after adding to cart
+      setQuantities((prev) => ({ ...prev, [productId]: 1 }));
     } catch (error) {
       console.error("Error adding to cart:", error.message);
+      toast.error("Failed to add to cart", { position: "top-center", autoClose: 3000 });
     }
+  };
+
+  const handleQuantityChange = (productId, delta) => {
+    setQuantities((prev) => {
+      const product = products.find((p) => p.id === productId);
+      const currentQty = prev[productId] || 1;
+      const newQty = Math.max(1, Math.min(currentQty + delta, product.quantity));
+      return { ...prev, [productId]: newQty };
+    });
   };
 
   const removeFromCart = async (id) => {
@@ -298,277 +319,325 @@ const POS = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-screen p-2 bg-gray-950 text-white bg-gray-800">
-      {/* Product List */}
-      <div className="md:col-span-2 flex flex-col min-h-0 bg-gray-900 p-5 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
+    <>
+      <style>
+        {`
+          html, body {
+            background-color: #0f172a; /* Matches bg-gray-950 */
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+          }
+        `}
+      </style>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-screen bg-gray-950 text-white">
+        {/* Product List */}
+        <div className="md:col-span-2 flex flex-col min-h-0 bg-gray-900 px-5 py-2">
+          <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
-        {/* Search and Filter */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="relative w-full">
-            <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full bg-gray-800 rounded-lg pl-10 p-2 outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select
-            className="bg-gray-800 p-2 rounded-lg w-full md:w-auto"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="All">All</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id.toString()}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Product Grid */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filteredProducts.map((product) => {
-              const activeDiscount = getActiveDiscount(product);
-              const displayPrice = activeDiscount
-                ? activeDiscount.discountedPrice
-                : Number(product.price);
-
-              return (
-                <div
-                  key={product.id}
-                  className="bg-gray-800 rounded-lg p-4 shadow-md flex flex-col items-center justify-between relative"
-                >
-                  {activeDiscount && (
-                    <span className="absolute top-2 right-2 bg-purple-500 text-white text-xs px-2 py-1 rounded flex items-center">
-                      <FaTag className="mr-1" />
-                      Discount:{" "}
-                      {activeDiscount.type === "fixed"
-                        ? `₱${activeDiscount.value}`
-                        : `${activeDiscount.value}%`}
-                    </span>
-                  )}
-                  <img
-                    src={getImageUrl(product.image)}
-                    alt={product.name}
-                    className="w-32 h-32 object-cover rounded-md mb-3"
-                    onError={(e) => {
-                      e.target.src = "https://placehold.co/150";
-                    }}
-                  />
-                  <h3 className="font-bold text-center mt-2">{product.name}</h3>
-                  <span className="text-gray-400 text-sm mb-1">
-                    {categories.find((cat) => cat.id === product.category_id)
-                      ?.name || "No Category"}
-                  </span>
-                  <span className="text-xl font-bold text-green-400 mt-1">
-                    {activeDiscount ? (
-                      <>
-                        <span className="line-through text-gray-500 mr-2">
-                          ₱{Number(product.price).toFixed(2)}
-                        </span>
-                        ₱{Number(displayPrice).toFixed(2)}
-                      </>
-                    ) : (
-                      `₱${Number(displayPrice).toFixed(2)}`
-                    )}
-                  </span>
-                  <button
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md px-4 py-2 mt-3 w-full"
-                    onClick={() => addToCart(product.id, 1)}
-                  >
-                    <FaShoppingCart className="inline mr-2" />
-                    Add to Cart
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Cart */}
-      <div className="flex flex-col min-h-0 bg-gray-900 p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4">Cart</h2>
-
-        {/* Cart Items Scrollable */}
-        <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-          {cart.length === 0 ? (
-            <p className="text-gray-400 text-center">Your cart is empty.</p>
-          ) : (
-            Object.values(
-              cart.reduce((acc, item) => {
-                if (acc[item.product?.id]) {
-                  acc[item.product?.id].quantity += item.quantity;
-                } else {
-                  acc[item.product?.id] = { ...item };
-                }
-                return acc;
-              }, {})
-            ).map((item) => {
-              const activeDiscount = getActiveDiscount(item.product);
-              const displayPrice = activeDiscount
-                ? activeDiscount.discountedPrice
-                : Number(item.price);
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between bg-gray-700 p-2 rounded"
-                >
-                  <div className="flex-1 truncate">
-                    {item.product?.name} x{item.quantity}
-                    {activeDiscount && (
-                      <span className="ml-2 text-purple-400 text-xs">
-                        (Discounted)
-                      </span>
-                    )}
-                  </div>
-                  <div className="w-24 text-right">
-                    ₱{(displayPrice * item.quantity).toFixed(2)}
-                  </div>
-                  <div className="w-8 flex justify-end">
-                    <button onClick={() => removeFromCart(item.id)}>
-                      <FaTrash className="text-red-500" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Summary + Checkout */}
-        <div className="mt-auto">
-          {/* Discount Inputs */}
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <select
-                className="bg-gray-700 text-white p-2 rounded w-full"
-                value={discountType || "none"}
-                onChange={(e) => {
-                  setDiscountType(e.target.value === "none" ? null : e.target.value);
-                  setDiscountValue("");
-                  setErrors({ ...errors, discount: "" });
-                }}
-                disabled={cart.length === 0}
-              >
-                <option value="none">No Discount</option>
-                <option value="percentage">% (Percentage)</option>
-                <option value="fixed">₱ (Fixed Amount)</option>
-              </select>
-              {discountType && (
-                <input
-                  type="number"
-                  placeholder="Discount Value"
-                  className="bg-gray-700 text-white p-2 rounded w-full"
-                  value={discountValue}
-                  onChange={(e) => handleDiscountChange(e.target.value)}
-                  min="0"
-                  max={discountType === "percentage" ? "100" : totalPrice}
-                  step={discountType === "percentage" ? "1" : "0.01"}
-                  disabled={cart.length === 0}
-                />
-              )}
+          {/* Search and Filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="relative w-full">
+              <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="w-full bg-gray-800 rounded-lg pl-10 p-2 outline-none text-white"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-            {discountType && errors.discount && (
-              <p className="text-red-500 text-sm">{errors.discount}</p>
-            )}
-
-            {/* Summary */}
-            <div className="flex justify-between text-gray-400">
-              <span>Total:</span>
-              <span>₱{totalPrice.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-gray-400">
-              <span>Discount:</span>
-              <span>-₱{discountAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-bold">
-              <span>Final Price:</span>
-              <span>₱{finalPrice.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Customer Name */}
-          <div className="mt-4">
-            <input
-              type="text"
-              placeholder="Customer Name (Optional)"
-              className="bg-gray-700 text-white w-full p-2 rounded"
-              value={customerName}
-              onChange={(e) => {
-                setCustomerName(e.target.value);
-                setErrors({ ...errors, customerName: "" });
-              }}
-              maxLength={50}
-            />
-            {errors.customerName && (
-              <p className="text-red-500 text-sm">{errors.customerName}</p>
-            )}
-          </div>
-
-          {/* Payment Method */}
-          <div className="mt-4">
             <select
-              className="bg-gray-700 text-white w-full p-2 rounded"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="bg-gray-800 p-2 rounded-lg w-full md:w-auto text-white"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
             >
-              <option value="cash">Cash</option>
-              <option value="card">Card</option>
+              <option value="All">All</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id.toString()}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Amount Paid */}
-          <div className="mt-2">
-            <input
-              type="number"
-              placeholder="Amount Paid"
-              className="bg-gray-700 text-white w-full p-2 rounded"
-              value={amountPaid}
-              onChange={(e) => {
-                setAmountPaid(e.target.value);
-                setErrors({ ...errors, amountPaid: "" });
-              }}
-              min="0"
-              step="0.01"
-              disabled={cart.length === 0}
-            />
-            {errors.amountPaid && (
-              <p className="text-red-500 text-sm">{errors.amountPaid}</p>
+          {/* Product Grid */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredProducts.map((product) => {
+                const activeDiscount = getActiveDiscount(product);
+                const displayPrice = activeDiscount
+                  ? activeDiscount.discountedPrice
+                  : Number(product.price);
+                const isOutOfStock = product.quantity === 0;
+                const isAvailable = product.is_active && !isOutOfStock;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-gray-800 rounded-xl p-5 shadow-lg flex flex-col items-center justify-between relative border border-gray-700 hover:bg-gray-700 hover:border-blue-500 hover:shadow-xl"
+                  >
+                    {activeDiscount && (
+                      <span className="absolute top-3 right-3 bg-purple-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                        <FaTag className="mr-1" />
+                        {activeDiscount.type === "fixed"
+                          ? `₱${activeDiscount.value}`
+                          : `${activeDiscount.value}%`}
+                      </span>
+                    )}
+                    <img
+                      src={getImageUrl(product.image)}
+                      alt={product.name}
+                      className="w-36 h-36 object-cover rounded-lg mb-4"
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/150";
+                      }}
+                    />
+                    <h3 className="font-semibold text-lg text-center text-white mb-2">{product.name}</h3>
+                    <span className="text-gray-400 text-sm mb-2">
+                      {categories.find((cat) => cat.id === product.category_id)
+                        ?.name || "No Category"}
+                    </span>
+                    <span className="text-xl font-bold text-green-400 mb-3">
+                      {activeDiscount ? (
+                        <>
+                          <span className="line-through text-gray-500 mr-2">
+                            ₱{Number(product.price).toFixed(2)}
+                          </span>
+                          ₱{Number(displayPrice).toFixed(2)}
+                        </>
+                      ) : (
+                        `₱${Number(displayPrice).toFixed(2)}`
+                      )}
+                    </span>
+                    {isAvailable && (
+                      <div className="flex items-center mb-3">
+                        <button
+                          className="bg-gray-700 text-white p-2 rounded-l-md hover:bg-gray-600 disabled:opacity-50"
+                          onClick={() => handleQuantityChange(product.id, -1)}
+                          disabled={quantities[product.id] <= 1}
+                        >
+                          <FaMinus />
+                        </button>
+                        <span className="px-4 py-2 bg-gray-800 text-white font-semibold">
+                          {quantities[product.id] || 1}
+                        </span>
+                        <button
+                          className="bg-gray-700 text-white p-2 rounded-r-md hover:bg-gray-600 disabled:opacity-50"
+                          onClick={() => handleQuantityChange(product.id, 1)}
+                          disabled={quantities[product.id] >= product.quantity}
+                        >
+                          <FaPlus />
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      className={`rounded-md px-4 py-2 w-full font-semibold text-white ${
+                        isAvailable
+                          ? "bg-blue-600 hover:bg-blue-500"
+                          : "bg-gray-600 cursor-not-allowed"
+                      }`}
+                      onClick={() => isAvailable && addToCart(product.id, quantities[product.id] || 1)}
+                      disabled={!isAvailable}
+                    >
+                      {isAvailable ? (
+                        <>
+                          <FaShoppingCart className="inline mr-2" />
+                          Add to Cart
+                        </>
+                      ) : isOutOfStock ? (
+                        "Out of Stock"
+                      ) : (
+                        "Product Unavailable"
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Cart */}
+        <div className="flex flex-col min-h-0 bg-gray-900 px-6 py-2">
+          <h2 className="text-2xl font-bold mb-4">Cart</h2>
+
+          {/* Cart Items Scrollable */}
+          <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+            {cart.length === 0 ? (
+              <p className="text-gray-400 text-center">Your cart is empty.</p>
+            ) : (
+              Object.values(
+                cart.reduce((acc, item) => {
+                  if (acc[item.product?.id]) {
+                    acc[item.product?.id].quantity += item.quantity;
+                  } else {
+                    acc[item.product?.id] = { ...item };
+                  }
+                  return acc;
+                }, {})
+              ).map((item) => {
+                const activeDiscount = getActiveDiscount(item.product);
+                const displayPrice = activeDiscount
+                  ? activeDiscount.discountedPrice
+                  : Number(item.price);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between bg-gray-700 p-2 rounded"
+                  >
+                    <div className="flex-1 truncate">
+                      {item.product?.name} x{item.quantity}
+                      {activeDiscount && (
+                        <span className="ml-2 text-purple-400 text-xs">
+                          (Discounted)
+                        </span>
+                      )}
+                    </div>
+                    <div className="w-24 text-right">
+                      ₱{(displayPrice * item.quantity).toFixed(2)}
+                    </div>
+                    <div className="w-8 flex justify-end">
+                      <button onClick={() => removeFromCart(item.id)}>
+                        <FaTrash className="text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
 
-          {/* Display Change */}
-          <div className="flex justify-between mt-2 text-gray-400">
-            <span>Change:</span>
-            <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
+          {/* Summary + Checkout */}
+          <div className="mt-auto">
+            {/* Discount Inputs */}
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <select
+                  className="bg-gray-700 text-white p-2 rounded w-full"
+                  value={discountType || "none"}
+                  onChange={(e) => {
+                    setDiscountType(e.target.value === "none" ? null : e.target.value);
+                    setDiscountValue("");
+                    setErrors({ ...errors, discount: "" });
+                  }}
+                  disabled={cart.length === 0}
+                >
+                  <option value="none">No Discount</option>
+                  <option value="percentage">% (Percentage)</option>
+                  <option value="fixed">₱ (Fixed Amount)</option>
+                </select>
+                {discountType && (
+                  <input
+                    type="number"
+                    placeholder="Discount Value"
+                    className="bg-gray-700 text-white p-2 rounded w-full"
+                    value={discountValue}
+                    onChange={(e) => handleDiscountChange(e.target.value)}
+                    min="0"
+                    max={discountType === "percentage" ? "100" : totalPrice}
+                    step={discountType === "percentage" ? "1" : "0.01"}
+                    disabled={cart.length === 0}
+                  />
+                )}
+              </div>
+              {discountType && errors.discount && (
+                <p className="text-red-500 text-sm">{errors.discount}</p>
+              )}
+
+              {/* Summary */}
+              <div className="flex justify-between text-gray-400">
+                <span>Total:</span>
+                <span>₱{totalPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-gray-400">
+                <span>Discount:</span>
+                <span>-₱{discountAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold">
+                <span>Final Price:</span>
+                <span>₱{finalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Customer Name */}
+            <div className="mt-4">
+              <input
+                type="text"
+                placeholder="Customer Name (Optional)"
+                className="bg-gray-700 text-white w-full p-2 rounded"
+                value={customerName}
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  setErrors({ ...errors, customerName: "" });
+                }}
+                maxLength={50}
+              />
+              {errors.customerName && (
+                <p className="text-red-500 text-sm">{errors.customerName}</p>
+              )}
+            </div>
+
+            {/* Payment Method */}
+            <div className="mt-4">
+              <select
+                className="bg-gray-700 text-white w-full p-2 rounded"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+              </select>
+            </div>
+
+            {/* Amount Paid */}
+            <div className="mt-2">
+              <input
+                type="number"
+                placeholder="Amount Paid"
+                className="bg-gray-700 text-white w-full p-2 rounded"
+                value={amountPaid}
+                onChange={(e) => {
+                  setAmountPaid(e.target.value);
+                  setErrors({ ...errors, amountPaid: "" });
+                }}
+                min="0"
+                step="0.01"
+                disabled={cart.length === 0}
+              />
+              {errors.amountPaid && (
+                <p className="text-red-500 text-sm">{errors.amountPaid}</p>
+              )}
+            </div>
+
+            {/* Display Change */}
+            <div className="flex justify-between mt-2 text-gray-400">
+              <span>Change:</span>
+              <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
+            </div>
+
+            {/* Checkout Button */}
+            <button
+              className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
+                !canCheckout || loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-green-500"
+              }`}
+              onClick={checkout}
+              disabled={!canCheckout || loading}
+            >
+              {loading
+                ? "Processing..."
+                : `Place Order - ₱${finalPrice.toFixed(2)}`}
+            </button>
           </div>
-
-          {/* Checkout Button */}
-          <button
-            className={`bg-green-600 px-4 py-2 rounded mt-4 w-full ${
-              !canCheckout || loading
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-green-500"
-            }`}
-            onClick={checkout}
-            disabled={!canCheckout || loading}
-          >
-            {loading
-              ? "Processing..."
-              : `Place Order - ₱${finalPrice.toFixed(2)}`}
-          </button>
         </div>
-      </div>
 
-      <ToastContainer />
-    </div>
+        <ToastContainer />
+      </div>
+    </>
   );
 };
 

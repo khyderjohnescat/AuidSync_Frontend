@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from "react";
-import { FaSearch, FaPlus, FaTimes, FaTrash, FaTag, FaList } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTimes, FaTrash, FaTag, FaList, FaToggleOn, FaToggleOff } from "react-icons/fa";
 import axiosInstance from "../../../../context/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,7 +18,7 @@ function ProductManager() {
     quantity: "",
     category_id: "",
     image: "",
-    is_active: 1,
+    is_active: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,8 +50,11 @@ function ProductManager() {
   }, [fetchProducts, fetchCategories]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -130,6 +133,24 @@ function ProductManager() {
     } catch (error) {
       console.error("Error deleting product:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Failed to delete product", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  const handleToggleActive = async (product) => {
+    try {
+      const response = await axiosInstance.put(`/products/toggle-active/${product.id}`);
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, is_active: response.data.product.is_active } : p
+        )
+      );
+      toast.success(response.data.message, { position: "top-center", autoClose: 3000 });
+    } catch (error) {
+      console.error("Error toggling product status:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to toggle product status", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -265,7 +286,7 @@ function ProductManager() {
 
         {/* Products Grid */}
         <div className="flex-1 overflow-y-auto p-2 flex-col h-screen" style={{ maxHeight: "67vh" }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5  rounded-lg" style={{ maxHeight: "50vh" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 rounded-lg" style={{ maxHeight: "50vh" }}>
             {filteredProducts.map((product) => {
               const imageUrl = getImageUrl(product.image);
               const categoryName =
@@ -307,12 +328,31 @@ function ProductManager() {
                     )}
                   </p>
                   <p className="text-gray-300">Stock: {product.quantity} pcs</p>
-                  <div className="mt-4 flex justify-between">
+                  <p className="text-gray-300">
+                    Status: {product.is_active ? "Active" : "Inactive"}
+                  </p>
+                  <div className="mt-4 flex justify-between flex-wrap gap-2">
                     <button
                       className="bg-blue-500 px-3 py-1 rounded"
                       onClick={() => handleEdit(product)}
                     >
                       Edit
+                    </button>
+                    <button
+                      className={`px-3 py-1 rounded flex items-center ${
+                        product.is_active ? "bg-yellow-500" : "bg-green-500"
+                      }`}
+                      onClick={() => handleToggleActive(product)}
+                    >
+                      {product.is_active ? (
+                        <>
+                          <FaToggleOff className="mr-1" /> Disable
+                        </>
+                      ) : (
+                        <>
+                          <FaToggleOn className="mr-1" /> Enable
+                        </>
+                      )}
                     </button>
                     <button
                       className="bg-red-500 px-3 py-1 rounded"
@@ -383,6 +423,16 @@ function ProductManager() {
                   required
                   className="p-2 rounded bg-gray-700 w-full text-white"
                 />
+                <label className="flex items-center text-white">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={formData.is_active}
+                    onChange={handleChange}
+                    className="mr-2"
+                  />
+                  Active
+                </label>
                 {previewImage && (
                   <img
                     src={previewImage}
