@@ -52,6 +52,7 @@ const POS = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [quantities, setQuantities] = useState({}); // Track quantities for each product
+  const [orderType, setOrderType] = useState("dine-in"); // New state for dine-in/take-out
 
   useEffect(() => {
     fetchUser();
@@ -281,7 +282,7 @@ const POS = () => {
 
     try {
       const payload = {
-        order_type: "dine-in",
+        order_type: orderType,
         customer_name: nameToSave,
         discount_type: discountType || "none",
         discount_value: Number(discountValue) || 0,
@@ -326,14 +327,18 @@ const POS = () => {
             background-color: #0f172a; /* Matches bg-gray-950 */
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
+            height: 100vh;
+            overflow: hidden; /* Prevent entire page scrolling */
+          }
+          #root {
+            height: 100vh;
+            overflow: hidden;
           }
         `}
       </style>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-screen bg-gray-950 text-white">
-        {/* Product List */}
-        <div className="md:col-span-2 flex flex-col min-h-0 bg-gray-900 px-5 py-2">
+      <div className="flex h-screen bg-gray-950 text-white">
+        {/* Left Side: Product List (Scrollable) */}
+        <div className="flex-1 flex flex-col bg-gray-900 p-5 overflow-hidden">
           <h2 className="text-2xl font-bold mb-4">Order Menu</h2>
 
           {/* Search and Filter */}
@@ -362,7 +367,7 @@ const POS = () => {
             </select>
           </div>
 
-          {/* Product Grid */}
+          {/* Product Grid (Scrollable) */}
           <div className="flex-1 overflow-y-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredProducts.map((product) => {
@@ -459,64 +464,78 @@ const POS = () => {
           </div>
         </div>
 
-        {/* Cart */}
-        <div className="flex flex-col min-h-0 bg-gray-900 px-6 py-2">
+        {/* Right Side: Cart (Static) */}
+        <div className="w-1/3 flex flex-col bg-gray-900 p-6">
           <h2 className="text-2xl font-bold mb-4">Cart</h2>
 
-          {/* Cart Items Scrollable */}
-          <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-            {cart.length === 0 ? (
-              <p className="text-gray-400 text-center">Your cart is empty.</p>
-            ) : (
-              Object.values(
-                cart.reduce((acc, item) => {
-                  if (acc[item.product?.id]) {
-                    acc[item.product?.id].quantity += item.quantity;
-                  } else {
-                    acc[item.product?.id] = { ...item };
-                  }
-                  return acc;
-                }, {})
-              ).map((item) => {
-                const activeDiscount = getActiveDiscount(item.product);
-                const displayPrice = activeDiscount
-                  ? activeDiscount.discountedPrice
-                  : Number(item.price);
+          {/* Dine-In or Take-Out Option */}
+          <div className="mb-4">
+            <select
+              className="bg-gray-800 py-2 px-3 rounded-lg w-full text-white"
+              value={orderType}
+              onChange={(e) => setOrderType(e.target.value)}
+            >
+              <option value="dine-in">Dine-In</option>
+              <option value="take-out">Take-Out</option>
+            </select>
+          </div>
 
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between bg-gray-700 p-2 rounded"
-                  >
-                    <div className="flex-1 truncate">
-                      {item.product?.name} x{item.quantity}
-                      {activeDiscount && (
-                        <span className="ml-2 text-purple-400 text-xs">
-                          (Discounted)
-                        </span>
-                      )}
+          {/* Cart Items (Static, but can scroll if content overflows) */}
+          <div className="flex-1 flex flex-col">
+            {cart.length === 0 ? (
+              <p className="text-gray-400 text-center py-4">Your cart is empty.</p>
+            ) : (
+              <div className="space-y-2">
+                {Object.values(
+                  cart.reduce((acc, item) => {
+                    if (acc[item.product?.id]) {
+                      acc[item.product?.id].quantity += item.quantity;
+                    } else {
+                      acc[item.product?.id] = { ...item };
+                    }
+                    return acc;
+                  }, {})
+                ).map((item) => {
+                  const activeDiscount = getActiveDiscount(item.product);
+                  const displayPrice = activeDiscount
+                    ? activeDiscount.discountedPrice
+                    : Number(item.price);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between bg-gray-700 py-2 px-3 rounded"
+                    >
+                      <div className="flex-1 truncate">
+                        {item.product?.name} x{item.quantity}
+                        {activeDiscount && (
+                          <span className="ml-2 text-purple-400 text-xs">
+                            (Discounted)
+                          </span>
+                        )}
+                      </div>
+                      <div className="w-24 text-right">
+                        ₱{(displayPrice * item.quantity).toFixed(2)}
+                      </div>
+                      <div className="w-8 flex justify-end">
+                        <button onClick={() => removeFromCart(item.id)}>
+                          <FaTrash className="text-red-500" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="w-24 text-right">
-                      ₱{(displayPrice * item.quantity).toFixed(2)}
-                    </div>
-                    <div className="w-8 flex justify-end">
-                      <button onClick={() => removeFromCart(item.id)}>
-                        <FaTrash className="text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
 
           {/* Summary + Checkout */}
-          <div className="mt-auto">
+          <div className="mt-4">
             {/* Discount Inputs */}
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2">
                 <select
-                  className="bg-gray-700 text-white p-2 rounded w-full"
+                  className="bg-gray-700 text-white py-2 px-3 rounded w-full"
                   value={discountType || "none"}
                   onChange={(e) => {
                     setDiscountType(e.target.value === "none" ? null : e.target.value);
@@ -533,7 +552,7 @@ const POS = () => {
                   <input
                     type="number"
                     placeholder="Discount Value"
-                    className="bg-gray-700 text-white p-2 rounded w-full"
+                    className="bg-gray-700 text-white py-2 px-3 rounded w-full"
                     value={discountValue}
                     onChange={(e) => handleDiscountChange(e.target.value)}
                     min="0"
@@ -567,7 +586,7 @@ const POS = () => {
               <input
                 type="text"
                 placeholder="Customer Name (Optional)"
-                className="bg-gray-700 text-white w-full p-2 rounded"
+                className="bg-gray-700 text-white w-full py-2 px-3 rounded"
                 value={customerName}
                 onChange={(e) => {
                   setCustomerName(e.target.value);
@@ -583,7 +602,7 @@ const POS = () => {
             {/* Payment Method */}
             <div className="mt-4">
               <select
-                className="bg-gray-700 text-white w-full p-2 rounded"
+                className="bg-gray-700 text-white w-full py-2 px-3 rounded"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
@@ -593,11 +612,11 @@ const POS = () => {
             </div>
 
             {/* Amount Paid */}
-            <div className="mt-2">
+            <div className="mt-4">
               <input
                 type="number"
                 placeholder="Amount Paid"
-                className="bg-gray-700 text-white w-full p-2 rounded"
+                className="bg-gray-700 text-white w-full py-2 px-3 rounded"
                 value={amountPaid}
                 onChange={(e) => {
                   setAmountPaid(e.target.value);
@@ -613,7 +632,7 @@ const POS = () => {
             </div>
 
             {/* Display Change */}
-            <div className="flex justify-between mt-2 text-gray-400">
+            <div className="flex justify-between mt-4 text-gray-400">
               <span>Change:</span>
               <span>{change >= 0 ? `₱${change.toFixed(2)}` : "-"}</span>
             </div>
@@ -633,9 +652,9 @@ const POS = () => {
                 : `Place Order - ₱${finalPrice.toFixed(2)}`}
             </button>
           </div>
-        </div>
 
-        <ToastContainer />
+          <ToastContainer />
+        </div>
       </div>
     </>
   );
