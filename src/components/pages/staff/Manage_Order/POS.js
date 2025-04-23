@@ -464,7 +464,7 @@ const POS = () => {
           </div>
         </div>
 
-        {/* Right Side: Cart (Static) */}
+        {/* Right Side: Cart (Static with Scrollable Cart Items) */}
         <div className="w-1/3 flex flex-col bg-gray-900 p-6">
           <h2 className="text-2xl font-bold mb-4">Cart</h2>
 
@@ -480,8 +480,8 @@ const POS = () => {
             </select>
           </div>
 
-          {/* Cart Items (Static, but can scroll if content overflows) */}
-          <div className="flex-1 flex flex-col">
+          {/* Cart Items (Scrollable) */}
+          <div className="flex-1 overflow-y-auto mb-4">
             {cart.length === 0 ? (
               <p className="text-gray-400 text-center py-4">Your cart is empty.</p>
             ) : (
@@ -529,10 +529,10 @@ const POS = () => {
             )}
           </div>
 
-          {/* Summary + Checkout */}
-          <div className="mt-4">
+          {/* Summary + Checkout (Static) */}
+          <div>
             {/* Discount Inputs */}
-            <div className="mt-4 space-y-2">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <select
                   className="bg-gray-700 text-white py-2 px-3 rounded w-full"
