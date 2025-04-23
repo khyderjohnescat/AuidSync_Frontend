@@ -270,6 +270,8 @@ function ExpensesDashboard() {
 
   return (
     <div className="bg-gray-800 min-h-screen p-6 text-white">
+      <div className="bg-gray-900 min-h-screen p-6 text-white rounded-lg shadow-lg">
+
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => navigate("/admindashboard")}
@@ -290,7 +292,7 @@ function ExpensesDashboard() {
         </div>
       </div>
 
-      <div className="bg-gray-700 p-4 rounded-lg mb-6">
+      <div className="bg-gray-800 p-4 rounded-lg mb-6">
         <h3 className="text-xl mb-4">Expenses Overview</h3>
         {expensesData.length > 0 && expenseCategories.length > 0 ? (
           <Line data={expensesChartData} options={chartOptions} />
@@ -300,13 +302,13 @@ function ExpensesDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-gray-700 p-4 rounded-lg">
+        <div className="bg-gray-800 p-4 rounded-lg">
           <h3 className="text-xl mb-4">Total Expenses This Month</h3>
           <p className="text-sm text-gray-400">Total Expenses</p>
           <p className="text-2xl font-bold">₱{formatNumber(totalExpensesThisMonth)}</p>
         </div>
         {expenseCategories.map((category) => (
-          <div key={category.name} className="bg-gray-700 p-4 rounded-lg">
+          <div key={category.name} className="bg-gray-800 p-4 rounded-lg">
             <div className="flex items-center mb-2">
               {iconMap[category.name] || <FaQuestion className="mr-2 text-gray-500" />}
               <h3 className="text-xl">{category.name}</h3>
@@ -321,7 +323,7 @@ function ExpensesDashboard() {
       {/* Filter Modal */}
       {isFilterModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-700 p-6 rounded-lg w-full max-w-md">
+          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Filters</h3>
               <button onClick={() => setIsFilterModalOpen(false)}>
@@ -396,6 +398,7 @@ function ExpensesDashboard() {
         pauseOnHover
         theme="light"
       />
+    </div>
     </div>
   );
 }

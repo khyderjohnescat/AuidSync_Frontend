@@ -319,6 +319,8 @@ function ProfitsDashboard() {
 
   return (
     <div className="bg-gray-800 min-h-screen p-6 text-white">
+      <div className="bg-gray-900 min-h-screen p-6 text-white rounded-lg shadow-lg">
+
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => navigate("/admindashboard")}
@@ -341,7 +343,7 @@ function ProfitsDashboard() {
 
       <div className="flex flex-col gap-6">
         {/* Profit Overview - Full Width */}
-        <div className="bg-gray-700 p-4 rounded-lg">
+        <div className="bg-gray-800 p-4 rounded-lg">
           {profitData.length > 0 && !allProfitsZero ? (
             <div className="h-80">
               <Bar data={profitChartData} options={chartOptions} />
@@ -353,7 +355,7 @@ function ProfitsDashboard() {
 
         {/* Total Profit This Month and Highest Profit - Side by Side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gray-700 p-4 rounded-lg">
+          <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-xl mb-4">Total Profit This Month</h3>
             <div className="flex justify-between items-center">
               <div>
@@ -379,7 +381,7 @@ function ProfitsDashboard() {
             </div>
           </div>
 
-          <div className="bg-gray-700 p-4 rounded-lg">
+          <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-xl mb-4">Highest Profit</h3>
             <div className="flex justify-between items-center">
               <div>
@@ -410,7 +412,7 @@ function ProfitsDashboard() {
       {/* Filter Modal */}
       {isFilterModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-700 p-6 rounded-lg w-full max-w-md">
+          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Filters</h3>
               <button onClick={() => setIsFilterModalOpen(false)}>
@@ -485,6 +487,7 @@ function ProfitsDashboard() {
         theme="light"
       />
     </div>
+  </div>
   );
 }
 

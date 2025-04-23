@@ -239,6 +239,7 @@ function OrdersDashboard() {
 
   return (
     <div className="bg-gray-800 min-h-screen p-6 text-white">
+      <div className="bg-gray-900 min-h-screen p-6 text-white rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => navigate("/admindashboard")}
@@ -261,7 +262,7 @@ function OrdersDashboard() {
 
       <div className="flex flex-col gap-6">
         {/* Order Overview (Bar Chart) - Full Width */}
-        <div className="bg-gray-700 p-4 rounded-lg">
+        <div className="bg-gray-800 p-4 rounded-lg">
           <h3 className="text-xl mb-4">Order Overview</h3>
           {ordersData.length > 0 ? (
             <Bar data={ordersChartData} options={chartOptions} />
@@ -273,7 +274,7 @@ function OrdersDashboard() {
         {/* Top-Selling and Least-Selling Products - Side by Side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Top-Selling Products */}
-          <div className="bg-gray-700 p-4 rounded-lg">
+          <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-xl mb-4">Top-Selling Products</h3>
             {topSellingProducts.length > 0 ? (
               <div className="overflow-x-auto">
@@ -300,7 +301,7 @@ function OrdersDashboard() {
           </div>
 
           {/* Least-Selling Products */}
-          <div className="bg-gray-700 p-4 rounded-lg">
+          <div className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-xl mb-4">Least-Selling Products</h3>
             {leastSellingProducts.length > 0 ? (
               <div className="overflow-x-auto">
@@ -331,7 +332,7 @@ function OrdersDashboard() {
       {/* Filter Modal */}
       {isFilterModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-700 p-6 rounded-lg w-full max-w-md">
+          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">Filters</h3>
               <button onClick={() => setIsFilterModalOpen(false)}>
@@ -406,6 +407,7 @@ function OrdersDashboard() {
         pauseOnHover
         theme="light"
       />
+    </div>
     </div>
   );
 }
