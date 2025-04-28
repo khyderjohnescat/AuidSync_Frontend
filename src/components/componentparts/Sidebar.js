@@ -41,6 +41,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <NavItem to="/manageproduct" icon={<MdInventory />} text="Manage Products" isOpen={isOpen} location={location} />
           <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
           <NavItem to="/admindashboard" icon={<MdDashboard />} text="Dashboard" isOpen={isOpen} location={location} />
+          <NavItem to="/manage-support" icon={<MdDashboard />} text="Dev Support" isOpen={isOpen} location={location} />
         </nav>
 
         <div className="mt-auto flex flex-col gap-4">
