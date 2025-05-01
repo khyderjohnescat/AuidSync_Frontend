@@ -10,12 +10,23 @@ const axiosInstance = axios.create({
     withCredentials: true, // Ensures cookies are sent
 });
 
+// Attach token to every request
+axiosInstance.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    } else {
+        console.warn("No token found in localStorage for request:", config.url);
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
 // Interceptor to handle expired tokens
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            console.warn("Token expired, trying to refresh...");
+            console.warn("Token expired or unauthorized, trying to refresh...");
 
             try {
                 const refreshResponse = await axios.post(
@@ -31,12 +42,12 @@ axiosInstance.interceptors.response.use(
                 error.config.headers.Authorization = `Bearer ${newToken}`;
                 return axiosInstance(error.config);
             } catch (refreshError) {
-                console.error("Token refresh failed, logging out");
+                console.error("Token refresh failed, redirecting to login:", refreshError.response?.data || refreshError.message);
 
                 // If the token refresh fails, clear the token and user data
                 localStorage.removeItem("token");
-                localStorage.removeItem("user"); 
-
+                localStorage.removeItem("user");
+                window.location.href = "/login"; // Redirect to login page
                 return Promise.reject(refreshError);
             }
         }
@@ -44,15 +55,6 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-// Attach token to every request
-axiosInstance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
 
 // Logout function
 axiosInstance.logout = async () => {
@@ -65,7 +67,7 @@ axiosInstance.logout = async () => {
     } finally {
         // Clear token and user data from localStorage
         localStorage.removeItem("token");
-        localStorage.removeItem("user"); 
+        localStorage.removeItem("user");
     }
 };
 

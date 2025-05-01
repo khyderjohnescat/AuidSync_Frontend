@@ -40,6 +40,20 @@ function ManageSupport() {
     faqs: "FAQ",
   };
 
+  // Check if the user is authenticated
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("No token found. Redirecting to login...");
+      toast.error("Please log in to access this page.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      axiosInstance.logout().catch((err) => console.error("Logout error during redirect:", err));
+      navigate("/login");
+    }
+  }, [navigate]);
+
   // Fetch Support Categories
   const fetchCategories = useCallback(async () => {
     try {
@@ -87,10 +101,14 @@ function ManageSupport() {
     }
   }, [search]);
 
+  // Only fetch data if the user is authenticated
   useEffect(() => {
-    fetchCategories();
-    fetchArticles();
-    fetchFAQs();
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchCategories();
+      fetchArticles();
+      fetchFAQs();
+    }
   }, [fetchCategories, fetchArticles, fetchFAQs]);
 
   const handleChange = (e) => {
