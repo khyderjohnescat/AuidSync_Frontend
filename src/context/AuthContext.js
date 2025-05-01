@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     const [loading, setLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false); // Add state to prevent multiple logout requests
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
                 console.error("Authentication error:", error.message);
                 setUser(null);
                 localStorage.removeItem("user");
+                localStorage.removeItem("token"); // Clear token if auth check fails
             } finally {
                 setLoading(false);
             }
@@ -36,24 +38,43 @@ export const AuthProvider = ({ children }) => {
             const response = await axiosInstance.post("/auth/login", { email, password });
             setUser(response.data.user);
             localStorage.setItem("user", JSON.stringify(response.data.user));
+            // Ensure the token is saved during login (assuming the response includes a token)
+            if (response.data.token) {
+                localStorage.setItem("token", response.data.token);
+            }
         } catch (error) {
             throw new Error(error.response?.data?.message || "Login failed");
         }
     };
 
     const logout = async () => {
+        if (isLoggingOut) return; // Prevent multiple logout requests
+        setIsLoggingOut(true);
+
         try {
-            // Call logout on the server
-            await axiosInstance.logout();
-            
-            // Clear user data
+            const token = localStorage.getItem("token");
+            console.log("Token before logout request:", token); // Debug token presence
+            if (!token) {
+                throw new Error("No token found");
+            }
+
+            // Make a proper HTTP request to the logout endpoint
+            await axiosInstance.post("/auth/logout");
+
+            // Clear user data and token
             setUser(null);
             localStorage.removeItem("user");
-            localStorage.removeItem("token"); // Ensure token is cleared as well
-            
-            // After logout, you can manually handle redirection in the component where AuthProvider is used
+            localStorage.removeItem("token");
         } catch (error) {
             console.error("Logout failed:", error.message);
+            // Clear user data and token even if the request fails
+            setUser(null);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+        } finally {
+            setIsLoggingOut(false);
+            // Redirect to login page
+            window.location.href = "/";
         }
     };
 
@@ -62,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, isLoggingOut }}>
             {children}
         </AuthContext.Provider>
     );

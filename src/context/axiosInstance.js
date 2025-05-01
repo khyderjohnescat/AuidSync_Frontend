@@ -11,15 +11,18 @@ const axiosInstance = axios.create({
 });
 
 // Attach token to every request
-axiosInstance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    } else {
-        console.warn("No token found in localStorage for request:", config.url);
-    }
-    return config;
-}, (error) => Promise.reject(error));
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            console.warn("No token found in localStorage for request:", config.url);
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // Interceptor to handle expired tokens
 axiosInstance.interceptors.response.use(
@@ -51,24 +54,8 @@ axiosInstance.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
-
         return Promise.reject(error);
     }
 );
-
-// Logout function
-axiosInstance.logout = async () => {
-    try {
-        await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
-        console.log("Logged out successfully");
-    } catch (error) {
-        console.error("Logout failed:", error);
-        throw error;
-    } finally {
-        // Clear token and user data from localStorage
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-    }
-};
 
 export default axiosInstance;
