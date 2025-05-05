@@ -43,6 +43,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     <NavItem to="/manageexpenses" icon={<MdMoney />} text="Manage Expenses" isOpen={isOpen} location={location} />
                     <NavItem to="/admindashboard" icon={<MdDashboard />} text="Dashboard" isOpen={isOpen} location={location} />
                     <NavItem to="/manage-support" icon={<MdDashboard />} text="Dev Support" isOpen={isOpen} location={location} />
+                    <NavItem to="/manage-accounts" icon={<MdDashboard />} text="Manage Accounts" isOpen={isOpen} location={location} />
                     <NavItem to="/audits" icon={<MdDashboard />} text="Audit" isOpen={isOpen} location={location} />
                 </nav>
 
