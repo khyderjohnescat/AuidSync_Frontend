@@ -33,8 +33,11 @@ import ExpensesDashboard from "./components/pages/admin/Dashboard/expensesDashbo
 import HelpSupport from "./components/pages/settings/HelpSupport";
 import CustomerSupport from "./components/pages/helpsupport/CustomerSupport";
 import ManageSupport from "./components/pages/devs/ManageSupport";
-import ManageAccount from "./components/pages/devs/manageAccount";
+import ManageAllUsers from "./components/pages/devs/manageAccount";
+import ManageAccount from "./components/pages/admin/createUser";
 import AuditLogScreen from "./components/pages/admin/auditLogScreen";
+import ManageSoftDeletedUsers from "./components/pages/devs/manageSoftDeleted";
+import AdminManageSoftDeletedUsers from "./components/pages/admin/manageSoftDeleted";
 
 import { AuthProvider } from "./context/AuthContext";
 
@@ -95,8 +98,11 @@ function Layout() {
           <Route path="/expenses-dashboard" element={<ProtectedRoute><ExpensesDashboard isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/help-support" element={<ProtectedRoute><HelpSupport isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/manage-support" element={<ProtectedRoute><ManageSupport isOpen={isOpen} /></ProtectedRoute>} />
-          <Route path="/manage-accounts" element={<ProtectedRoute><ManageAccount isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/manage-accounts" element={<ProtectedRoute><ManageAllUsers isOpen={isOpen} /></ProtectedRoute>} />
           <Route path="/audits" element={<ProtectedRoute><AuditLogScreen isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/admin-manage" element={<ProtectedRoute><ManageAccount isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/manage-soft-deleted-users" element={<ProtectedRoute><ManageSoftDeletedUsers isOpen={isOpen} /></ProtectedRoute>} />
+          <Route path="/admin-manage-soft-deleted-users" element={<ProtectedRoute><AdminManageSoftDeletedUsers isOpen={isOpen} /></ProtectedRoute>} />
         </Routes>
       </div>
     </div>

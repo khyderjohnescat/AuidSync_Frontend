@@ -30,7 +30,21 @@ const Login = () => {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      // Extract the error message from the backend response
+      const errorMessage = err.response?.data?.message || err.message || "Something went wrong. Please try again later.";
+
+      // Map backend error messages to user-friendly messages
+      if (errorMessage === "Account unrecognized") {
+        setError("Account unrecognized. Please check your email or contact support.");
+      } else if (errorMessage === "Account deactivated") {
+        setError("Account deactivated. Please contact support to reactivate your account.");
+      } else if (errorMessage === "Invalid credentials") {
+        setError("Invalid email or password. Please try again.");
+      } else if (errorMessage === "Server error") {
+        setError("Something went wrong. Please try again later.");
+      } else {
+        setError("Something went wrong. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }

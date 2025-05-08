@@ -50,12 +50,19 @@ axiosInstance.interceptors.response.use(
                 // If the token refresh fails, clear the token and user data
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
-                window.location.href = "/login"; // Redirect to login page
+                window.location.href = "/"; // Redirect to login page
                 return Promise.reject(refreshError);
             }
         }
         return Promise.reject(error);
     }
 );
+
+// Custom logout method
+axiosInstance.logout = async () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/"; // Redirect to login page
+};
 
 export default axiosInstance;

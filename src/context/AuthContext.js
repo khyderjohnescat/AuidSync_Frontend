@@ -38,10 +38,7 @@ export const AuthProvider = ({ children }) => {
             const response = await axiosInstance.post("/auth/login", { email, password });
             setUser(response.data.user);
             localStorage.setItem("user", JSON.stringify(response.data.user));
-            // Ensure the token is saved during login (assuming the response includes a token)
-            if (response.data.token) {
-                localStorage.setItem("token", response.data.token);
-            }
+            // No need to store token manually since backend uses cookies
         } catch (error) {
             throw new Error(error.response?.data?.message || "Login failed");
         }
@@ -52,28 +49,18 @@ export const AuthProvider = ({ children }) => {
         setIsLoggingOut(true);
 
         try {
-            const token = localStorage.getItem("token");
-            console.log("Token before logout request:", token); // Debug token presence
-            if (!token) {
-                throw new Error("No token found");
-            }
-
-            // Make a proper HTTP request to the logout endpoint
             await axiosInstance.post("/auth/logout");
-
-            // Clear user data and token
             setUser(null);
             localStorage.removeItem("user");
             localStorage.removeItem("token");
         } catch (error) {
             console.error("Logout failed:", error.message);
-            // Clear user data and token even if the request fails
             setUser(null);
             localStorage.removeItem("user");
             localStorage.removeItem("token");
         } finally {
             setIsLoggingOut(false);
-            // Redirect to login page
+            // Redirect using navigate instead of window.location.href
             window.location.href = "/";
         }
     };

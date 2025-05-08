@@ -1,12 +1,13 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaSearch, FaPlus, FaTimes, FaEdit, FaTrash, FaUndo } from 'react-icons/fa';
 import { ArrowLeftCircle } from 'lucide-react';
 import axiosInstance from '../../../context/axiosInstance.js';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function ManageAllUsers() {
+function ManageAccount() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
@@ -25,6 +26,7 @@ function ManageAllUsers() {
     password: '',
   });
   const [roleOptions, setRoleOptions] = useState([]);
+  const [showSoftDeleted] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -32,12 +34,15 @@ function ManageAllUsers() {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        includeAdmin: 'true',
         ...(search && { search }),
+        includeSoftDeleted: 'false', // Explicitly ensure soft-deleted users are excluded
       }).toString();
       const url = `/users${queryParams ? `?${queryParams}` : ''}`;
+      console.log('Fetching users from:', `${axiosInstance.defaults.baseURL}${url}`);
       const response = await axiosInstance.get(url);
       const fetchedUsers = response.data.data;
+
+      console.log('Fetched users:', fetchedUsers); // Debug log to verify users
 
       setUsers(fetchedUsers);
       setTotal(response.data.total);
@@ -54,8 +59,9 @@ function ManageAllUsers() {
         });
       }
     } catch (error) {
+      console.error('Error fetching users:', error.response?.data || error.message);
       setError('User list not available. Please check backend setup.');
-      toast.error('User list not available. Please check backend setup.', {
+      toast.error('Failed to load user list. Please check the backend setup.', {
         position: 'top-center',
         autoClose: 3000,
         theme: 'light',
@@ -75,6 +81,7 @@ function ManageAllUsers() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
+      console.log('No token found. Redirecting to login...');
       toast.error('Please log in to access this page.', {
         position: 'top-center',
         autoClose: 3000,
@@ -125,10 +132,14 @@ function ManageAllUsers() {
     confirmAction('deactivate', async () => {
       try {
         const response = await axiosInstance.put(`/users/${id}/deactivate`, {});
-        toast.success(response.data.message, { position: 'top-center', autoClose: 3000, theme: 'light' });
+        toast.success('User deactivated successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        });
         fetchUsers();
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to deactivate user', {
+        toast.error(error.response?.data?.message || 'Failed to deactivate user.', {
           position: 'top-center',
           autoClose: 3000,
           theme: 'light',
@@ -141,10 +152,14 @@ function ManageAllUsers() {
     confirmAction('activate', async () => {
       try {
         const response = await axiosInstance.put(`/users/${id}/activate`, {});
-        toast.success(response.data.message, { position: 'top-center', autoClose: 3000, theme: 'light' });
+        toast.success('User activated successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        });
         fetchUsers();
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to activate user', {
+        toast.error(error.response?.data?.message || 'Failed to activate user.', {
           position: 'top-center',
           autoClose: 3000,
           theme: 'light',
@@ -157,10 +172,34 @@ function ManageAllUsers() {
     confirmAction('soft delete', async () => {
       try {
         const response = await axiosInstance.put(`/users/${id}/soft-delete`, {});
-        toast.success(response.data.message, { position: 'top-center', autoClose: 3000, theme: 'light' });
+        toast.success('User soft-deleted successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        });
         fetchUsers();
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to soft-delete user', {
+        toast.error(error.response?.data?.message || 'Failed to soft-delete user.', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        });
+      }
+    });
+  };
+
+  const handleRestore = async (id) => {
+    confirmAction('restore', async () => {
+      try {
+        const response = await axiosInstance.put(`/users/${id}/restore`, {});
+        toast.success('User restored successfully!', {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        });
+        fetchUsers();
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to restore user.', {
           position: 'top-center',
           autoClose: 3000,
           theme: 'light',
@@ -195,23 +234,23 @@ function ManageAllUsers() {
 
     try {
       if (!formData.first_name.trim() || !formData.last_name.trim()) {
-        setError('First name and last name are required');
+        setError('First name and last name are required.');
         return;
       }
       if (!formData.email.trim()) {
-        setError('Email is required');
+        setError('Email is required.');
         return;
       }
       if (!formData.role.trim()) {
-        setError('Role is required');
+        setError('Role is required.');
         return;
       }
       if (!editingUser && !formData.password.trim()) {
-        setError('Password is required');
+        setError('Password is required for new users.');
         return;
       }
 
-      const endpoint = editingUser ? `/users/${editingUser.userId}?includeAdmin=true` : '/auth/register';
+      const endpoint = editingUser ? `/users/${editingUser.userId}` : '/auth/register';
       const method = editingUser ? 'PUT' : 'POST';
       const dataToSend = {
         first_name: formData.first_name.trim(),
@@ -221,17 +260,26 @@ function ManageAllUsers() {
         ...(method === 'POST' && { password: formData.password.trim() }),
       };
 
+      console.log('Sending data:', dataToSend);
       const response = await axiosInstance({
         method,
         url: endpoint,
         data: dataToSend,
       });
 
-      toast.success(response.data.message, { position: 'top-center', autoClose: 3000, theme: 'light' });
+      toast.success(
+        editingUser ? 'User updated successfully!' : 'User added successfully!',
+        {
+          position: 'top-center',
+          autoClose: 3000,
+          theme: 'light',
+        }
+      );
       fetchUsers();
       closeModal();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error submitting user';
+      const errorMessage = error.response?.data?.message || 'Failed to submit user.';
+      console.error('Error response:', error.response?.data);
       setError(errorMessage);
       toast.error(errorMessage, {
         position: 'top-center',
@@ -262,8 +310,9 @@ function ManageAllUsers() {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase()) ||
-    user.email.toLowerCase().includes(search.toLowerCase())
+    (user.name.toLowerCase().includes(search.toLowerCase()) ||
+    user.email.toLowerCase().includes(search.toLowerCase())) &&
+    user.canSoftDelete // Ensure only non-soft-deleted users are shown
   );
 
   const addNewRole = (newRole) => {
@@ -273,11 +322,31 @@ function ManageAllUsers() {
     }
   };
 
+  const formatDateTime = (timestamp) => {
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  };
+
   return (
     <div className="bg-gray-800 gap-2 flex flex-col h-screen p-2 text-white">
       <div className="p-6 bg-gray-900 rounded-lg text-white h-auto min-h-full">
-        <h2 className="text-2xl font-bold mb-4 text-white text-center">Manage All Users</h2>
-
+        <h2 className="text-2xl font-bold mb-4 text-white text-center">Manage Account</h2>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
           <div className="flex w-full justify-between">
             <button
@@ -294,7 +363,7 @@ function ManageAllUsers() {
                 <FaPlus className="mr-2" /> Add User
               </button>
               <button
-                onClick={() => navigate('/manage-soft-deleted-users')}
+                onClick={() => navigate('/admin-manage-soft-deleted-users')}
                 className="bg-yellow-500 px-4 py-2 rounded flex items-center hover:bg-yellow-600 transition duration-200"
               >
                 <FaTrash className="mr-2" /> Soft Deleted Users
@@ -302,7 +371,6 @@ function ManageAllUsers() {
             </div>
           </div>
         </div>
-
         <div className="flex items-center justify-between bg-gray-700 p-2 rounded mb-4">
           <div className="flex items-center w-full">
             <FaSearch className="text-gray-400 mx-2" />
@@ -315,7 +383,6 @@ function ManageAllUsers() {
             />
           </div>
         </div>
-
         <div className="overflow-x-auto bg-gray-800 shadow-md rounded-md">
           <table className="min-w-full table-auto text-base">
             <thead className="bg-gray-700 text-white">
@@ -331,19 +398,19 @@ function ManageAllUsers() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-3 text-center text-gray-400">
+                  <td colSpan="7" className="p-3 text-center text-gray-400">
                     Loading...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="6" className="p-3 text-center text-red-500">
+                  <td colSpan="7" className="p-3 text-center text-red-500">
                     {error}
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-3 text-center text-gray-400">
+                  <td colSpan="7" className="p-3 text-center text-gray-400">
                     No users found.
                   </td>
                 </tr>
@@ -355,6 +422,9 @@ function ManageAllUsers() {
                     <td className="p-3">{user.email}</td>
                     <td className="p-3">{user.role}</td>
                     <td className="p-3">{user.status}</td>
+                    {showSoftDeleted && (
+                      <td className="p-3">{formatDateTime(user.deletedAt)}</td>
+                    )}
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <button
@@ -381,6 +451,14 @@ function ManageAllUsers() {
                             <FaTrash />
                           </button>
                         )}
+                        {!user.canSoftDelete && showSoftDeleted && (
+                          <button
+                            onClick={() => handleRestore(user.userId)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm"
+                          >
+                            <FaUndo />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -389,7 +467,6 @@ function ManageAllUsers() {
             </tbody>
           </table>
         </div>
-
         {!loading && !error && filteredUsers.length > 0 && (
           <div className="mt-4 flex justify-between items-center">
             <span>Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total}</span>
@@ -422,7 +499,6 @@ function ManageAllUsers() {
             </div>
           </div>
         )}
-
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
             <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-lg border border-gray-700">
@@ -437,13 +513,11 @@ function ManageAllUsers() {
                   <FaTimes size={20} />
                 </button>
               </div>
-
               {error && (
                 <div className="mb-4 p-2 bg-red-600 text-white rounded text-sm">
                   {error}
                 </div>
               )}
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -542,7 +616,6 @@ function ManageAllUsers() {
             </div>
           </div>
         )}
-
         <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -560,4 +633,4 @@ function ManageAllUsers() {
   );
 }
 
-export default ManageAllUsers;
+export default ManageAccount;

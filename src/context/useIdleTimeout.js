@@ -22,18 +22,23 @@ const useIdleTimeout = (timeout) => {
             if (timeSinceLastActivity >= timeout) {
                 console.log(`User has been idle for ${timeout / 1000} seconds, logging out...`);
 
-                // Clear any stored authentication data
-                localStorage.removeItem("authToken"); // Adjust this to your actual auth storage
-                sessionStorage.clear(); // Clear session data if used
+                // Clear stored authentication data
+                localStorage.removeItem("token"); // Match the key used in axiosInstance.js
+                localStorage.removeItem("user");
+                sessionStorage.clear();
 
-                axiosInstance.logout()
-                    .catch((error) => console.error("Error during logout:", error))
-                    .finally(() => {
-                        navigate("/"); // Ensure navigation to login
-                        window.location.reload(); // Force a reload to clear state
-                    });
+                // Attempt to call logout if defined, otherwise proceed with redirect
+                if (axiosInstance.logout) {
+                    axiosInstance.logout()
+                        .catch((error) => console.error("Error during logout:", error))
+                        .finally(() => {
+                            navigate("/login"); // Redirect to login page
+                        });
+                } else {
+                    navigate("/login"); // Fallback if logout is not defined
+                }
             }
-        }, 1000);
+        }, 5000); // Check every 5 seconds instead of 1 second
 
         return () => clearInterval(checkIdle);
     }, [lastActivity, timeout, navigate]);
